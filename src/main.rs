@@ -26,10 +26,17 @@ pub fn main() {
         }),
     ));
 
-    let target = "1+2-(3+1-(4))";
-    println!("[In]\n{}\n", target);
-    println!("[Out]\n{:#?}", parse(&expression, target));
-    println!("[Out]\n{:#?}", parse(&expression, "hoge"));
-    println!("[Out]\n{:#?}", parse(&expression, "1+2-(3+1"));
-    println!("[Out]\n{}", parse(&expression, "0-3+(((3)))").unwrap());
+    let targets = vec!["1+2-(3+1-(4))", "hoge", "1+2-(3+1", "0-3+(((3)))"];
+
+    for target in targets {
+        println!("[In]:\n   {}\n", target);
+        match parse(&expression, target) {
+            Ok(res) => {
+                println!("[Out]:\n   {}\n", res);
+            }
+            Err(message) => {
+                println!("[Out]:\n   {}\n", message);
+            }
+        }
+    }
 }
