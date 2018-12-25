@@ -1,4 +1,4 @@
-use crate::parser::base::{Node, Parser, State, Type};
+use crate::parser::base::{Node, Parser, State};
 use std::rc::Rc;
 
 pub struct Map<T: Clone> {
