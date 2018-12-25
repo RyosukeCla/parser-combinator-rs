@@ -11,6 +11,7 @@ mod opt;
 mod regexp;
 mod seq;
 mod token;
+mod unwrap_map;
 mod wrap_map;
 
 pub use self::base::{Node, Parser, State};
@@ -26,6 +27,7 @@ pub use self::opt::build as Opt;
 pub use self::regexp::build as RegExp;
 pub use self::seq::build as Seq;
 pub use self::token::build as Token;
+pub use self::unwrap_map::build as UnwrapMap;
 pub use self::wrap_map::build as WrapMap;
 
 pub fn parse<K: Clone, P: Parser<K>>(parser: &P, target: &str) -> Result<Node<K>, String> {
