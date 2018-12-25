@@ -74,20 +74,20 @@ parser.parse(target, position); // -> State
 #[derive(Debug, Clone)]
 pub struct State<K: Clone> {
   pub success: bool,
-  pub node: Option<Node<K>>,
+  pub node: Option<Node<T>>,
   pub position: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct Node<K: Clone> {
   pub value: Option<String>,
-  pub children: Option<Vec<Node<K>>>,
-  pub kind: Option<K>,
+  pub children: Option<Vec<Node<T>>>,
+  pub kind: Option<T>,
 }
 
 pub trait Parser<K: Clone> {
-  fn parse(&self, target: &str, position: usize) -> State<K>;
-  fn box_clone(&self) -> Box<Parser<K>>;
+  fn parse(&self, target: &str, position: usize) -> State<T>;
+  fn box_clone(&self) -> Box<Parser<T>>;
 }
 ```
 
