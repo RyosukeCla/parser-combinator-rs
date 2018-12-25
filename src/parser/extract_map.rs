@@ -7,7 +7,7 @@ use crate::parser::{Node, Parser};
  *    to
  *  [ b ]
  */
-pub fn build<P: Parser>(parser: &P, extract: usize) -> map::Map {
+pub fn build<K: Clone, P: Parser<K>>(parser: &P, extract: usize) -> map::Map<K> {
   map::build(
     parser,
     Box::new(move |node| {
@@ -17,6 +17,7 @@ pub fn build<P: Parser>(parser: &P, extract: usize) -> map::Map {
       Node {
         value: None,
         children: Some(vec![extraction.clone()]),
+        kind: None,
       }
     }),
   )

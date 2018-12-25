@@ -3,6 +3,7 @@ mod char;
 mod choice;
 mod extract_map;
 mod flatten_map;
+mod kind;
 mod lazy;
 mod many;
 mod map;
@@ -17,6 +18,7 @@ pub use self::char::build as Char;
 pub use self::choice::build as Choice;
 pub use self::extract_map::build as ExtractMap;
 pub use self::flatten_map::build as FlattenMap;
+pub use self::kind::build as Kind;
 pub use self::lazy::build as Lazy;
 pub use self::many::build as Many;
 pub use self::map::build as Map;
@@ -26,7 +28,7 @@ pub use self::seq::build as Seq;
 pub use self::token::build as Token;
 pub use self::wrap_map::build as WrapMap;
 
-pub fn parse<P: Parser>(parser: &P, target: &str) -> Result<Node, String> {
+pub fn parse<K: Clone, P: Parser<K>>(parser: &P, target: &str) -> Result<Node<K>, String> {
   let result = parser.parse(target, 0);
   if result.success {
     if result.position == target.len() {

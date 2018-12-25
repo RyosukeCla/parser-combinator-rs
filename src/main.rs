@@ -1,11 +1,18 @@
 pub mod parser;
 use crate::parser::{
-    parse, Char, Choice, ExtractMap, FlattenMap, Lazy, Many, RegExp, Seq, Token, WrapMap,
+    parse, Char, Choice, ExtractMap, FlattenMap, Kind, Lazy, Many, RegExp, Seq, Token, WrapMap,
 };
 
+#[derive(Clone, Debug)]
+enum Symbol {
+    Num,
+    Op,
+    Expr,
+}
+
 pub fn main() {
-    let num = RegExp(r"([0-9]|[1-9][0-9]*)");
-    let operator = Char("+-");
+    let num = Kind(&RegExp(r"([0-9]|[1-9][0-9]*)"), Symbol::Num);
+    let operator = Kind(&Char("+-"), Symbol::Op);
     let parenthesis = Lazy();
     let atom = Choice(&num).or(&parenthesis);
     let expression =
@@ -16,11 +23,13 @@ pub fn main() {
         1, // extract expression
     )));
 
+    let parser = Kind(&expression, Symbol::Expr); // grant Expression label
+
     let targets = vec!["1+2-(3+1-(4))", "hoge", "1+2-(3+1", "0-3+(((3)))"];
 
     for target in targets {
         println!("[In]:\n   {}\n", target);
-        match parse(&expression, target) {
+        match parse(&parser, target) {
             Ok(res) => {
                 println!("[Out]:\n   {}\n", res);
             }

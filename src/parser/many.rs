@@ -1,24 +1,24 @@
 use crate::parser::base::{Node, Parser, State};
 
-pub struct Many {
-  parser: Box<Parser>,
+pub struct Many<K> {
+  parser: Box<Parser<K>>,
 }
 
-pub fn build<P: Parser>(parser: &P) -> Many {
+pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> Many<K> {
   Many {
     parser: parser.box_clone(),
   }
 }
 
-impl Parser for Many {
-  fn box_clone(&self) -> Box<Parser> {
+impl<K: Clone + 'static> Parser<K> for Many<K> {
+  fn box_clone(&self) -> Box<Parser<K>> {
     Box::new(Many {
       parser: self.parser.box_clone(),
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State {
-    let mut result: Vec<Node> = vec![];
+  fn parse(&self, target: &str, position: usize) -> State<K> {
+    let mut result: Vec<Node<K>> = vec![];
     let mut position: usize = position;
 
     loop {
@@ -38,6 +38,7 @@ impl Parser for Many {
       node: Some(Node {
         value: None,
         children: Some(result),
+        kind: None,
       }),
       position: position,
     }

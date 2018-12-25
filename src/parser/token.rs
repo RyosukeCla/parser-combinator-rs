@@ -12,15 +12,15 @@ pub fn build(token: &str) -> Token {
   }
 }
 
-impl Parser for Token {
-  fn box_clone(&self) -> Box<Parser> {
+impl<K: Clone> Parser<K> for Token {
+  fn box_clone(&self) -> Box<Parser<K>> {
     Box::new(Token {
       token: self.token.clone(),
       len: self.len,
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State {
+  fn parse(&self, target: &str, position: usize) -> State<K> {
     let next_position = match target.len() {
       x if x < position + self.len => x,
       _ => position + self.len,
@@ -40,6 +40,7 @@ impl Parser for Token {
         node: Some(Node {
           value: Some(self.token.clone()),
           children: None,
+          kind: None,
         }),
         position: next_position,
       },

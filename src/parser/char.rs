@@ -18,14 +18,14 @@ pub fn build(chars: &str) -> Char {
   }
 }
 
-impl Parser for Char {
-  fn box_clone(&self) -> Box<Parser> {
+impl<K: Clone> Parser<K> for Char {
+  fn box_clone(&self) -> Box<Parser<K>> {
     Box::new(Char {
       dict: self.dict.clone(),
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State {
+  fn parse(&self, target: &str, position: usize) -> State<K> {
     let next_position = if target.len() == position {
       position
     } else {
@@ -41,6 +41,7 @@ impl Parser for Char {
         node: Some(Node {
           value: Some(s.clone()),
           children: None,
+          kind: None,
         }),
         position: next_position,
       },

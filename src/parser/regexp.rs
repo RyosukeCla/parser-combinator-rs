@@ -20,14 +20,14 @@ pub fn build(regex: &str) -> RegExp {
   RegExp { regex: reg }
 }
 
-impl Parser for RegExp {
-  fn box_clone(&self) -> Box<Parser> {
+impl<K: Clone> Parser<K> for RegExp {
+  fn box_clone(&self) -> Box<Parser<K>> {
     Box::new(RegExp {
       regex: self.regex.clone(),
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State {
+  fn parse(&self, target: &str, position: usize) -> State<K> {
     let sliced = &target[position..];
     match self.regex.captures(sliced) {
       Some(caps) => {
@@ -39,6 +39,7 @@ impl Parser for RegExp {
           node: Some(Node {
             value: Some(res),
             children: None,
+            kind: None,
           }),
           position: position + len,
         }

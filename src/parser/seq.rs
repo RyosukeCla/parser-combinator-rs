@@ -1,25 +1,25 @@
 use crate::parser::base::{Node, Parser, State};
 
-pub struct Seq {
-  parsers: Vec<Box<Parser>>,
+pub struct Seq<K> {
+  parsers: Vec<Box<Parser<K>>>,
 }
 
-pub fn build<P: Parser>(parser: &P) -> Seq {
+pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> Seq<K> {
   Seq {
     parsers: vec![parser.box_clone()],
   }
 }
 
-impl Seq {
-  pub fn and<P: Parser>(mut self, parser: &P) -> Self {
+impl<K: Clone> Seq<K> {
+  pub fn and<P: Parser<K>>(mut self, parser: &P) -> Self {
     self.parsers.push(parser.box_clone());
     self
   }
 }
 
-impl Parser for Seq {
-  fn box_clone(&self) -> Box<Parser> {
-    let mut parsers: Vec<Box<Parser>> = vec![];
+impl<K: Clone + 'static> Parser<K> for Seq<K> {
+  fn box_clone(&self) -> Box<Parser<K>> {
+    let mut parsers: Vec<Box<Parser<K>>> = vec![];
 
     for parser in self.parsers.iter() {
       parsers.push(parser.box_clone());
@@ -28,8 +28,8 @@ impl Parser for Seq {
     Box::new(Seq { parsers: parsers })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State {
-    let mut result: Vec<Node> = vec![];
+  fn parse(&self, target: &str, position: usize) -> State<K> {
+    let mut result: Vec<Node<K>> = vec![];
     let mut position: usize = position;
 
     for parser in self.parsers.iter() {
@@ -54,6 +54,7 @@ impl Parser for Seq {
       node: Some(Node {
         value: None,
         children: Some(result),
+        kind: None,
       }),
       position: position,
     }
