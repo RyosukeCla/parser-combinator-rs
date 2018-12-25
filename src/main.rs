@@ -1,38 +1,15 @@
 pub mod parser;
-use crate::parser::{parse, Char, Choice, Lazy, Many, Map, Node, Parser, RegExp, Seq, Token};
+use crate::parser::{
+    parse, Char, Choice, FlattenMap, Lazy, Many, Map, Node, Parser, RegExp, Seq, Token, WrapMap,
+};
 
 pub fn main() {
     let num = RegExp(r"([1-9][0-9]*)");
     let operator = Char("+-");
     let parenthesis = Lazy();
     let atom = Choice(&num).or(&parenthesis);
-    let expression = Map(
-        &Seq(&atom).and(&Many(&Seq(&operator).and(&atom))),
-        Box::new(|node| {
-            let mut nodes: Vec<Node> = vec![];
-            let children = node.children.unwrap();
-
-            // Seq(atom)
-            let first_atom = &children[0];
-            nodes.push(first_atom.clone());
-
-            // .and(Many)
-            let seconds = &children[1];
-            let seconds = seconds.children.as_ref().unwrap();
-            for second in seconds {
-                // Seq
-                let children = second.children.as_ref().unwrap();
-                for child in children {
-                    nodes.push(child.clone());
-                }
-            }
-
-            Node {
-                value: None,
-                children: Some(nodes),
-            }
-        }),
-    );
+    let expression =
+        FlattenMap(&Seq(&WrapMap(&atom)).and(&FlattenMap(&Many(&Seq(&operator).and(&atom)))));
 
     parenthesis.set_parser(&Map(
         &Seq(&Token("(")).and(&expression).and(&Token(")")),
