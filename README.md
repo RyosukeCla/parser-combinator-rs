@@ -6,14 +6,21 @@ Under construction..
 
 ```rust
 use parser::{
-    parse, Char, Choice, ExtractMap, FlattenMap, Lazy, Many, RegExp, Seq, Token, WrapMap,
+    parse, Char, Choice, ExtractMap, FlattenMap, Kind, Lazy, Many, RegExp, Seq, Token, WrapMap,
 };
+
+#[derive(Clone, Debug)]
+enum Symbol {
+    Num,
+    Op,
+    Expr,
+}
 
 // Expression Parser
 pub fn main() {
-    let num = RegExp(r"([0-9]|[1-9][0-9]*)");
-    let operator = Char("+-");
-    let parenthesis = Lazy();
+    let num = Kind(&RegExp(r"([1-9][0-9]*|[0-9])"), Symbol::Num); // grant Num label
+    let operator = Kind(&Char("+-"), Symbol::Op); // grand Op label
+    let parenthesis = Lazy(); // lazy initialized parser
     let atom = Choice(&num).or(&parenthesis);
     let expression =
         FlattenMap(&Seq(&WrapMap(&atom)).and(&FlattenMap(&Many(&Seq(&operator).and(&atom)))));
@@ -23,11 +30,13 @@ pub fn main() {
         1, // extract expression
     )));
 
+    let parser = Kind(&expression, Symbol::Expr); // grant Expr label
+
     let targets = vec!["1+2-(3+1-(4))", "hoge", "1+2-(3+1", "0-3+(((3)))"];
 
     for target in targets {
         println!("[In]:\n   {}\n", target);
-        match parse(&expression, target) {
+        match parse(&parser, target) {
             Ok(res) => {
                 println!("[Out]:\n   {}\n", res);
             }
@@ -61,6 +70,21 @@ parser.parse(target, position); // -> State
 
 ## Combinators
 
+### Kind
+
+Grant label
+
+```rust
+#[derive(Clone, Debug)]
+enum Symbol {
+  Num
+}
+
+let num = Kind(&RegExp(r"([1-9][0-9]*|[0-9])"), Symbol::Num);
+println!("{}", parse(&num, "100").unwrap());
+// Num 100
+```
+
 ### Token
 
 ```rust
@@ -92,7 +116,7 @@ println!("{}", parse(&number, "12345").unwrap());
 ```rust
 let seq = Seq(&Token("a")).and(&Token("b"));
 println!("{}", parse(&seq, "ab").unwrap());
-// [ a, b ]
+// [a, b]
 ```
 
 ### Many
