@@ -284,3 +284,14 @@ WrapMap([a]) = a
 ```rust
 let unwrap = UnwrapMap(&parser);
 ```
+
+### Trim
+
+Triming "a" by "-" yields: "--a--" -> "a"
+
+```rust
+let trim = Trim(&parser, &by);
+
+// eg
+let trim = Trim(&Token("a"), &Token("-"));
+```
