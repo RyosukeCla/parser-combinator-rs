@@ -3,7 +3,7 @@ use crate::parser::map;
 
 /**
  *  TypeMap
- *  Type::Str -> Type::I32
+ *  Type::Str -> another Type
  */
 pub fn build<T: Clone, P: Parser<T>, O: ToType<T>>(parser: &P) -> map::Map<T>
 where
