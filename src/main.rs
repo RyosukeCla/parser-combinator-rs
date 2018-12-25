@@ -1,5 +1,5 @@
 pub mod parser;
-use crate::parser::{Char, Choice, Lazy, Many, Map, Node, Parser, RegExp, Seq, Token};
+use crate::parser::{parse, Char, Choice, Lazy, Many, Map, Node, Parser, RegExp, Seq, Token};
 
 pub fn main() {
     let num = RegExp(r"([1-9][0-9]*)");
@@ -51,5 +51,6 @@ pub fn main() {
 
     let target = "1+2-(3+1-(4))";
     println!("[In]\n{}\n", target);
-    println!("[Out]\n{:#?}", expression.parse(target, 0));
+    println!("[Out]\n{:#?}", parse(&expression, target));
+    // println!("[Out]\n{:#?}", expression.parse(target, 0));
 }

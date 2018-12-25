@@ -19,3 +19,14 @@ pub use self::opt::build as Opt;
 pub use self::regex::build as RegExp;
 pub use self::seq::build as Seq;
 pub use self::token::build as Token;
+
+pub fn parse<P: Parser>(parser: &P, target: &str) -> Result<Node, String> {
+  let result = parser.parse(target, 0);
+  if result.success {
+    if let Some(node) = result.node {
+      return Ok(node);
+    }
+  }
+
+  Err("Couldn't parse".to_string())
+}
