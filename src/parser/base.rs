@@ -41,6 +41,112 @@ pub trait Parser<T: Clone> {
   fn box_clone(&self) -> Box<Parser<T>>;
 }
 
+pub trait ToType<T: Clone> {
+  fn to_type(&self) -> Type<T>;
+}
+
+impl<T: Clone> ToType<T> for String {
+  fn to_type(&self) -> Type<T> {
+    Type::Str(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for char {
+  fn to_type(&self) -> Type<T> {
+    Type::Char(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for isize {
+  fn to_type(&self) -> Type<T> {
+    Type::Isize(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for usize {
+  fn to_type(&self) -> Type<T> {
+    Type::Usize(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for u8 {
+  fn to_type(&self) -> Type<T> {
+    Type::U8(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for u16 {
+  fn to_type(&self) -> Type<T> {
+    Type::U16(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for u32 {
+  fn to_type(&self) -> Type<T> {
+    Type::U32(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for u64 {
+  fn to_type(&self) -> Type<T> {
+    Type::U64(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for u128 {
+  fn to_type(&self) -> Type<T> {
+    Type::U128(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for i16 {
+  fn to_type(&self) -> Type<T> {
+    Type::I16(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for i32 {
+  fn to_type(&self) -> Type<T> {
+    Type::I32(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for i64 {
+  fn to_type(&self) -> Type<T> {
+    Type::I64(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for i128 {
+  fn to_type(&self) -> Type<T> {
+    Type::I128(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for f32 {
+  fn to_type(&self) -> Type<T> {
+    Type::F32(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for f64 {
+  fn to_type(&self) -> Type<T> {
+    Type::F64(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for bool {
+  fn to_type(&self) -> Type<T> {
+    Type::Bool(self.clone())
+  }
+}
+
+impl<T: Clone> ToType<T> for Vec<Node<T>> {
+  fn to_type(&self) -> Type<T> {
+    Type::Arr(self.clone())
+  }
+}
+
 fn recursive_fmt<T: Clone + Debug>(node: &Node<T>) -> String {
   let mut res = "".to_string();
 
