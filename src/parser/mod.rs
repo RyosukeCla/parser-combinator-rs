@@ -32,9 +32,9 @@ pub fn parse<P: Parser>(parser: &P, target: &str) -> Result<Node, String> {
         return Ok(node);
       }
     } else {
-      return Err(format!("Parse Error: failed at {}", result.position));
+      return Err(format!("Parse Error: failed at {}", 1 + result.position));
     }
   }
 
-  Err("Parse Error: failed at 0".to_string())
+  Err("Parse Error: failed at 1".to_string())
 }
