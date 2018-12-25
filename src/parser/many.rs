@@ -1,31 +1,31 @@
-use crate::parser::base::{Node, Parser, State};
+use crate::parser::base::{Node, Parser, State, Type};
 
-pub struct Many<K> {
-  parser: Box<Parser<K>>,
+pub struct Many<T> {
+  parser: Box<Parser<T>>,
 }
 
-pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> Many<K> {
+pub fn build<T: Clone, P: Parser<T>>(parser: &P) -> Many<T> {
   Many {
     parser: parser.box_clone(),
   }
 }
 
-impl<K: Clone + 'static> Parser<K> for Many<K> {
-  fn box_clone(&self) -> Box<Parser<K>> {
+impl<T: Clone + 'static> Parser<T> for Many<T> {
+  fn box_clone(&self) -> Box<Parser<T>> {
     Box::new(Many {
       parser: self.parser.box_clone(),
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State<K> {
-    let mut result: Vec<Node<K>> = vec![];
+  fn parse(&self, target: &str, position: usize) -> State<T> {
+    let mut result: Vec<Node<T>> = vec![];
     let mut position: usize = position;
 
     loop {
       let parsed = self.parser.parse(target, position);
       if parsed.success {
-        if let Some(node) = &parsed.node {
-          result.push(node.clone());
+        if let Some(node) = parsed.node {
+          result.push(node);
         }
         position = parsed.position;
       } else {
@@ -36,8 +36,7 @@ impl<K: Clone + 'static> Parser<K> for Many<K> {
     State {
       success: true,
       node: Some(Node {
-        value: None,
-        children: Some(result),
+        value: Type::Arr(result),
         kind: None,
       }),
       position: position,

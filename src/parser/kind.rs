@@ -1,16 +1,15 @@
+use crate::parser::base::{Node, Parser};
 use crate::parser::map;
-use crate::parser::{Node, Parser};
 
 /**
  *  Grant Kind
  */
-pub fn build<K: Clone + 'static, P: Parser<K>>(parser: &P, name: K) -> map::Map<K> {
+pub fn build<T: Clone + 'static, P: Parser<T>>(parser: &P, name: &'static str) -> map::Map<T> {
   map::build(
     parser,
     Box::new(move |node| Node {
       value: node.value,
-      children: node.children,
-      kind: Some(name.clone()),
+      kind: Some(name.to_string()),
     }),
   )
 }

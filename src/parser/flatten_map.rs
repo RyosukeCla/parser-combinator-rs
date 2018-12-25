@@ -1,5 +1,5 @@
+use crate::parser::base::{Node, Parser, Type};
 use crate::parser::map;
-use crate::parser::{Node, Parser};
 
 /**
  *  Flatten Map
@@ -10,23 +10,29 @@ use crate::parser::{Node, Parser};
  *    to
  *  [a1, b1, c1, ..., a2, b2, c2, ...]
  */
-pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> map::Map<K> {
+pub fn build<T: Clone, P: Parser<T>>(parser: &P) -> map::Map<T> {
   map::build(
     parser,
     Box::new(|node| {
-      let mut nodes: Vec<Node<K>> = vec![];
-      let children = node.children.unwrap();
+      let mut nodes: Vec<Node<T>> = vec![];
+      let children = match node.value {
+        Type::Arr(children) => children,
+        _ => panic!("Could not flatten: node.value is not Type::Arr"),
+      };
 
       for child in children {
-        let grand_children = child.children.as_ref().unwrap();
+        let grand_children = match child.value {
+          Type::Arr(grand_children) => grand_children,
+          _ => panic!("Could not flatten: node.value.value is not Type::Arr"),
+        };
+
         for grand_child in grand_children {
-          nodes.push(grand_child.clone());
+          nodes.push(grand_child);
         }
       }
 
       Node {
-        value: None,
-        children: Some(nodes),
+        value: Type::Arr(nodes),
         kind: None,
       }
     }),

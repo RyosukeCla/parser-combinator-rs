@@ -1,25 +1,25 @@
-use crate::parser::base::{Node, Parser, State};
+use crate::parser::base::{Node, Parser, State, Type};
 
-pub struct Seq<K> {
-  parsers: Vec<Box<Parser<K>>>,
+pub struct Seq<T> {
+  parsers: Vec<Box<Parser<T>>>,
 }
 
-pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> Seq<K> {
+pub fn build<T: Clone, P: Parser<T>>(parser: &P) -> Seq<T> {
   Seq {
     parsers: vec![parser.box_clone()],
   }
 }
 
-impl<K: Clone> Seq<K> {
-  pub fn and<P: Parser<K>>(mut self, parser: &P) -> Self {
+impl<T: Clone> Seq<T> {
+  pub fn and<P: Parser<T>>(mut self, parser: &P) -> Self {
     self.parsers.push(parser.box_clone());
     self
   }
 }
 
-impl<K: Clone + 'static> Parser<K> for Seq<K> {
-  fn box_clone(&self) -> Box<Parser<K>> {
-    let mut parsers: Vec<Box<Parser<K>>> = vec![];
+impl<T: Clone + 'static> Parser<T> for Seq<T> {
+  fn box_clone(&self) -> Box<Parser<T>> {
+    let mut parsers: Vec<Box<Parser<T>>> = vec![];
 
     for parser in self.parsers.iter() {
       parsers.push(parser.box_clone());
@@ -28,8 +28,8 @@ impl<K: Clone + 'static> Parser<K> for Seq<K> {
     Box::new(Seq { parsers: parsers })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State<K> {
-    let mut result: Vec<Node<K>> = vec![];
+  fn parse(&self, target: &str, position: usize) -> State<T> {
+    let mut result: Vec<Node<T>> = vec![];
     let mut position: usize = position;
 
     for parser in self.parsers.iter() {
@@ -37,7 +37,7 @@ impl<K: Clone + 'static> Parser<K> for Seq<K> {
 
       if parsed.success {
         if let Some(node) = parsed.node {
-          result.push(node.clone());
+          result.push(node);
         }
         position = parsed.position;
       } else {
@@ -52,8 +52,7 @@ impl<K: Clone + 'static> Parser<K> for Seq<K> {
     State {
       success: true,
       node: Some(Node {
-        value: None,
-        children: Some(result),
+        value: Type::Arr(result),
         kind: None,
       }),
       position: position,

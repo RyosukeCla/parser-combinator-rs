@@ -1,17 +1,20 @@
+use crate::parser::base::{Parser, Type};
 use crate::parser::map;
-use crate::parser::Parser;
 
 /**
  *  Unwrap Map
  *  [a] -> a
  */
-pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> map::Map<K> {
+pub fn build<T: Clone, P: Parser<T>>(parser: &P) -> map::Map<T> {
   map::build(
     parser,
     Box::new(move |node| {
-      let children = node.children.unwrap();
-      let extraction = &children[0];
+      let children = match node.value {
+        Type::Arr(children) => children,
+        _ => panic!("Coundn't unwrap: node.value is not Type:Arr"),
+      };
 
+      let extraction = &children[0];
       extraction.clone()
     }),
   )

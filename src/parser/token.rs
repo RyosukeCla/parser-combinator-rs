@@ -1,4 +1,4 @@
-use crate::parser::base::{Node, Parser, State};
+use crate::parser::base::{Node, Parser, State, Type};
 
 pub struct Token {
   token: String,
@@ -12,15 +12,15 @@ pub fn build(token: &str) -> Token {
   }
 }
 
-impl<K: Clone> Parser<K> for Token {
-  fn box_clone(&self) -> Box<Parser<K>> {
+impl<T: Clone> Parser<T> for Token {
+  fn box_clone(&self) -> Box<Parser<T>> {
     Box::new(Token {
       token: self.token.clone(),
       len: self.len,
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State<K> {
+  fn parse(&self, target: &str, position: usize) -> State<T> {
     let next_position = match target.len() {
       x if x < position + self.len => x,
       _ => position + self.len,
@@ -38,8 +38,7 @@ impl<K: Clone> Parser<K> for Token {
       x if x == self.token => State {
         success: true,
         node: Some(Node {
-          value: Some(self.token.clone()),
-          children: None,
+          value: Type::Str(self.token.clone()),
           kind: None,
         }),
         position: next_position,

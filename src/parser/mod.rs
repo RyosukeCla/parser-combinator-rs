@@ -14,7 +14,7 @@ mod token;
 mod unwrap_map;
 mod wrap_map;
 
-pub use self::base::{Node, Parser, State};
+pub use self::base::{Node, Parser, State, Type};
 pub use self::char::build as Char;
 pub use self::choice::build as Choice;
 pub use self::extract_map::build as ExtractMap;
@@ -30,7 +30,7 @@ pub use self::token::build as Token;
 pub use self::unwrap_map::build as UnwrapMap;
 pub use self::wrap_map::build as WrapMap;
 
-pub fn parse<K: Clone, P: Parser<K>>(parser: &P, target: &str) -> Result<Node<K>, String> {
+pub fn parse<T: Clone, P: Parser<T>>(parser: &P, target: &str) -> Result<Node<T>, String> {
   let result = parser.parse(target, 0);
   if result.success {
     if result.position == target.len() {

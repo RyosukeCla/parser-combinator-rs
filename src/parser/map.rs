@@ -1,27 +1,27 @@
-use crate::parser::base::{Node, Parser, State};
+use crate::parser::base::{Node, Parser, State, Type};
 use std::rc::Rc;
 
-pub struct Map<K: Clone> {
-  parser: Box<Parser<K>>,
-  mapper: Rc<Box<Fn(Node<K>) -> Node<K>>>,
+pub struct Map<T: Clone> {
+  parser: Box<Parser<T>>,
+  mapper: Rc<Box<Fn(Node<T>) -> Node<T>>>,
 }
 
-pub fn build<K: Clone, P: Parser<K>>(parser: &P, mapper: Box<Fn(Node<K>) -> Node<K>>) -> Map<K> {
+pub fn build<T: Clone, P: Parser<T>>(parser: &P, mapper: Box<Fn(Node<T>) -> Node<T>>) -> Map<T> {
   Map {
     parser: parser.box_clone(),
     mapper: Rc::new(mapper),
   }
 }
 
-impl<K: Clone + 'static> Parser<K> for Map<K> {
-  fn box_clone(&self) -> Box<Parser<K>> {
+impl<T: Clone + 'static> Parser<T> for Map<T> {
+  fn box_clone(&self) -> Box<Parser<T>> {
     Box::new(Map {
       parser: self.parser.box_clone(),
       mapper: self.mapper.clone(),
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State<K> {
+  fn parse(&self, target: &str, position: usize) -> State<T> {
     let parsed = self.parser.parse(target, position);
 
     if parsed.success {

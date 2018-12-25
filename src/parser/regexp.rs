@@ -1,4 +1,4 @@
-use crate::parser::base::{Node, Parser, State};
+use crate::parser::base::{Node, Parser, State, Type};
 use regex::Regex;
 
 pub struct RegExp {
@@ -20,14 +20,14 @@ pub fn build(regex: &str) -> RegExp {
   RegExp { regex: reg }
 }
 
-impl<K: Clone> Parser<K> for RegExp {
-  fn box_clone(&self) -> Box<Parser<K>> {
+impl<T: Clone> Parser<T> for RegExp {
+  fn box_clone(&self) -> Box<Parser<T>> {
     Box::new(RegExp {
       regex: self.regex.clone(),
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State<K> {
+  fn parse(&self, target: &str, position: usize) -> State<T> {
     let sliced = &target[position..];
     match self.regex.captures(sliced) {
       Some(caps) => {
@@ -37,8 +37,7 @@ impl<K: Clone> Parser<K> for RegExp {
         State {
           success: true,
           node: Some(Node {
-            value: Some(res),
-            children: None,
+            value: Type::Str(res),
             kind: None,
           }),
           position: position + len,

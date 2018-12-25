@@ -1,4 +1,4 @@
-use crate::parser::base::{Node, Parser, State};
+use crate::parser::base::{Node, Parser, State, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -18,14 +18,14 @@ pub fn build(chars: &str) -> Char {
   }
 }
 
-impl<K: Clone> Parser<K> for Char {
-  fn box_clone(&self) -> Box<Parser<K>> {
+impl<T: Clone> Parser<T> for Char {
+  fn box_clone(&self) -> Box<Parser<T>> {
     Box::new(Char {
       dict: self.dict.clone(),
     })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State<K> {
+  fn parse(&self, target: &str, position: usize) -> State<T> {
     let next_position = if target.len() == position {
       position
     } else {
@@ -39,8 +39,7 @@ impl<K: Clone> Parser<K> for Char {
       Some(s) => State {
         success: true,
         node: Some(Node {
-          value: Some(s.clone()),
-          children: None,
+          value: Type::Str(s.clone()),
           kind: None,
         }),
         position: next_position,

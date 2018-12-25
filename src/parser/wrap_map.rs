@@ -1,5 +1,5 @@
+use crate::parser::base::{Node, Parser, Type};
 use crate::parser::map;
-use crate::parser::{Node, Parser};
 
 /**
  *  Wrap Map
@@ -7,12 +7,11 @@ use crate::parser::{Node, Parser};
  *    to
  *  [[a1, b1, c1, ..., a2, b2, c2, ...]]
  */
-pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> map::Map<K> {
+pub fn build<T: Clone, P: Parser<T>>(parser: &P) -> map::Map<T> {
   map::build(
     parser,
     Box::new(|node| Node {
-      value: None,
-      children: Some(vec![node.clone()]),
+      value: Type::Arr(vec![node]),
       kind: None,
     }),
   )

@@ -1,25 +1,25 @@
 use crate::parser::base::{Parser, State};
 
-pub struct Choice<K> {
-  parsers: Vec<Box<Parser<K>>>,
+pub struct Choice<T> {
+  parsers: Vec<Box<Parser<T>>>,
 }
 
-pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> Choice<K> {
+pub fn build<T: Clone, P: Parser<T>>(parser: &P) -> Choice<T> {
   Choice {
     parsers: vec![parser.box_clone()],
   }
 }
 
-impl<K: Clone> Choice<K> {
-  pub fn or<P: Parser<K>>(mut self, parser: &P) -> Self {
+impl<T: Clone> Choice<T> {
+  pub fn or<P: Parser<T>>(mut self, parser: &P) -> Self {
     self.parsers.push(parser.box_clone());
     self
   }
 }
 
-impl<K: Clone + 'static> Parser<K> for Choice<K> {
-  fn box_clone(&self) -> Box<Parser<K>> {
-    let mut parsers: Vec<Box<Parser<K>>> = vec![];
+impl<T: Clone + 'static> Parser<T> for Choice<T> {
+  fn box_clone(&self) -> Box<Parser<T>> {
+    let mut parsers: Vec<Box<Parser<T>>> = vec![];
 
     for parser in self.parsers.iter() {
       parsers.push(parser.box_clone());
@@ -28,7 +28,7 @@ impl<K: Clone + 'static> Parser<K> for Choice<K> {
     Box::new(Choice { parsers: parsers })
   }
 
-  fn parse(&self, target: &str, position: usize) -> State<K> {
+  fn parse(&self, target: &str, position: usize) -> State<T> {
     for parser in self.parsers.iter() {
       let parsed = parser.parse(target, position);
 
