@@ -4,7 +4,7 @@ Under construction..
 
 ## Usage
 
-```rs
+```rust
 use parser::{
     parse, Char, Choice, ExtractMap, FlattenMap, Lazy, Many, RegExp, Seq, Token, WrapMap,
 };
@@ -44,7 +44,7 @@ pub fn main() {
 
 ### Token
 
-```rs
+```rust
 let token = Token("token");
 println!("{}", parse(&token, "token").unwrap());
 // token
@@ -52,7 +52,7 @@ println!("{}", parse(&token, "token").unwrap());
 
 ### Char
 
-```rs
+```rust
 let operator = Char("+-");
 println!("{}", parse(&operator, "+").unwrap());
 // +
@@ -62,7 +62,7 @@ println!("{}", parse(&operator, "-").unwrap());
 
 ### Regex
 
-```rs
+```rust
 let number = RegExp(r"([0-9]|[1-9][0-9]*)");
 println!("{}", parse(&number, "12345").unwrap());
 // 12345
@@ -70,7 +70,7 @@ println!("{}", parse(&number, "12345").unwrap());
 
 ### Sequence
 
-```rs
+```rust
 let seq = Seq(&Token("a")).and(&Token("b"));
 println!("{}", parse(&seq, "ab").unwrap());
 // [ a, b ]
@@ -78,7 +78,7 @@ println!("{}", parse(&seq, "ab").unwrap());
 
 ### Many
 
-```rs
+```rust
 let many = Many(&Token("a"));
 println!("{}", parse(&many, "aaaaa").unwrap());
 // [a, a, a, a, a]
@@ -90,7 +90,7 @@ println!("{}", parse(&many, "aaaaa").unwrap());
 /(option)?/;
 ```
 
-```rs
+```rust
 let option = Opt(&Token("aaa"));
 println!("{}", parse(&option, "aaa").unwrap());
 // aaa
@@ -100,7 +100,7 @@ println!("{}", parse(&option, "").unwrap());
 
 ### Choice
 
-```rs
+```rust
 let choice = Choice(&Token("a")).or(&Token("b"));
 println!("{}", parse(&choice, "a").unwrap());
 // a
@@ -113,7 +113,7 @@ println!("{}", parse(&choice, "b").unwrap());
 Lazy initialized parser.
 It is useful for making recursive parser.
 
-```rs
+```rust
 let lazy = Lazy();
 // define parsers
 lazy.set_parser(&parser);
@@ -123,7 +123,7 @@ lazy.set_parser(&parser);
 
 map node to new node.
 
-```rs
+```rust
 // map a to b
 let map = Map(
   &Token("a"),
@@ -146,7 +146,7 @@ Extract an element from elements.
 ExtractMap([ a, b, c ], 1) = [ b ]
 ```
 
-```rs
+```rust
 let extraction = ExtractMap(&parser, extraction_index);
 ```
 
@@ -163,7 +163,7 @@ FlattenMap(
 ) = [a1, b1, c1, ..., a2, b2, c2, ...]
 ```
 
-```rs
+```rust
 let flatten = FlattenMap(&parser);
 ```
 
@@ -175,6 +175,6 @@ Wrap elements.
 WrapMap([a, b, c, ...]) = [[a, b, c, ...]]
 ```
 
-```rs
+```rust
 let wrap = WrapMap(&parser);
 ```
