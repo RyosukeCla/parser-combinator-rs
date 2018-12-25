@@ -10,43 +10,55 @@ use parser::{
 };
 
 #[derive(Clone, Debug)]
-enum Symbol {
-    Num,
-    Op,
-    Expr,
-}
+enum MyType {}
+
+#[derive(Clone, Debug)]
+const NUM: &str = "Num";
+const OP: &str = "Op";
+const EXPR: &str = "Expr";
+
 
 // Expression Parser
 pub fn main() {
-    let num = Kind(&RegExp(r"([1-9][0-9]*|[0-9])"), Symbol::Num); // grant Num label
-    let operator = Kind(&Char("+-"), Symbol::Op); // grand Op label
-    let parenthesis = Lazy(); // lazy initialized parser
+    let space = Token(" ");
+    let num = Kind( // grand Num Label
+        &TypeMap::<_, _, i32>(&Trim(&RegExp(r"([1-9][0-9]*|[0-9])"), &space)), // mapped to i32
+        NUM,
+    );
+    let operator = Kind(&Char("+-"), OP); // grand Op label
+    let parenthesis = Lazy::<MyType>(); // lazy initialized parser
     let atom = Choice(&num).or(&parenthesis);
     let expression =
         FlattenMap(&Seq(&WrapMap(&atom)).and(&FlattenMap(&Many(&Seq(&operator).and(&atom)))));
-
-    parenthesis.set_parser(&FlattenMap(&ExtractMap(
-        &Seq(&Token("(")).and(&expression).and(&Token(")")),
+    let paren_open = Trim(&Token("("), &space); // (
+    let paren_close = Trim(&Token(")"), &space); // )
+    parenthesis.set_parser(&ExtractMap(
+        &Seq(&paren_open).and(&expression).and(&paren_close), // ( expre )
         1, // extract expression
-    )));
+    ));
 
-    let parser = Kind(&expression, Symbol::Expr); // grant Expr label
+    let parser = Kind(&expression, EXPR); // grant Expr label
 
-    let targets = vec!["1+2-(3+1-(4))", "hoge", "1+2-(3+1", "0-3+(((3)))"];
+    let target = "1 + 2 + ( 20 + 3 )";
 
-    for target in targets {
-        println!("[In]:\n   {}\n", target);
-        match parse(&parser, target) {
-            Ok(res) => {
-                println!("[Out]:\n   {}\n", res);
-            }
-            Err(message) => {
-                println!("[Out]:\n   {}\n", message);
-            }
+    println!("[In]:\n   {}\n", target);
+    match parse(&parser, target) {
+        Ok(res) => {
+            println!("[Out]:\n   {}\n", res);
+        }
+        Err(message) => {
+            println!("[Out]:\n   {}\n", message);
         }
     }
 }
+```
 
+```
+[In]:
+   1 + 2 + ( 20 + 3 )
+
+[Out]:
+   Expr [Num I32(1), Op Str("+"), Num I32(2), Op Str("+"), [Num I32(20), Op Str("+"), Num I32(3)]]
 ```
 
 ## Basic
@@ -237,7 +249,7 @@ let toI32 = TypeMap::<_, _, i32>(&parser);
 Extract an element from elements.
 
 ```
-ExtractMap([ a, b, c ], 1) = [ b ]
+ExtractMap([ a, b, c ], 1) = b
 ```
 
 ```rust
