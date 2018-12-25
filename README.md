@@ -220,6 +220,18 @@ println!("{}", parse(&map, "a").unwrap());
 // b
 ```
 
+### Type Map
+
+map str to specific type.
+
+```
+TypeMap(Type::Str) => Type::I32
+```
+
+```rust
+let toI32 = TypeMap::<_, _, i32>(&parser);
+```
+
 ### Extract Map
 
 Extract an element from elements.
