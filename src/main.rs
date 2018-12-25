@@ -11,7 +11,7 @@ enum Symbol {
 }
 
 pub fn main() {
-    let num = Kind(&RegExp(r"([0-9]|[1-9][0-9]*)"), Symbol::Num);
+    let num = Kind(&RegExp(r"([1-9][0-9]*|[0-9])"), Symbol::Num);
     let operator = Kind(&Char("+-"), Symbol::Op);
     let parenthesis = Lazy();
     let atom = Choice(&num).or(&parenthesis);
@@ -25,7 +25,7 @@ pub fn main() {
 
     let parser = Kind(&expression, Symbol::Expr); // grant Expression label
 
-    let targets = vec!["1+2-(3+1-(4))", "hoge", "1+2-(3+1", "0-3+(((3)))"];
+    let targets = vec!["10+20-(3+1-(4))", "hoge", "1+2-(3+1", "0-3+(((3)))"];
 
     for target in targets {
         println!("[In]:\n   {}\n", target);
