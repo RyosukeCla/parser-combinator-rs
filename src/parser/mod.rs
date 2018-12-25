@@ -27,10 +27,14 @@ pub use self::wrap_map::build as WrapMap;
 pub fn parse<P: Parser>(parser: &P, target: &str) -> Result<Node, String> {
   let result = parser.parse(target, 0);
   if result.success {
-    if let Some(node) = result.node {
-      return Ok(node);
+    if result.position == target.len() {
+      if let Some(node) = result.node {
+        return Ok(node);
+      }
+    } else {
+      return Err(format!("Parse Error: failed at {}", result.position));
     }
   }
 
-  Err("Couldn't parse".to_string())
+  Err("Parse Error: failed at 0".to_string())
 }

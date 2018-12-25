@@ -1,10 +1,10 @@
 pub mod parser;
 use crate::parser::{
-    parse, Char, Choice, FlattenMap, Lazy, Many, Map, Node, Parser, RegExp, Seq, Token, WrapMap,
+    parse, Char, Choice, FlattenMap, Lazy, Many, Map, Node, RegExp, Seq, Token, WrapMap,
 };
 
 pub fn main() {
-    let num = RegExp(r"([1-9][0-9]*)");
+    let num = RegExp(r"([0-9]|[1-9][0-9]*)");
     let operator = Char("+-");
     let parenthesis = Lazy();
     let atom = Choice(&num).or(&parenthesis);
@@ -29,5 +29,7 @@ pub fn main() {
     let target = "1+2-(3+1-(4))";
     println!("[In]\n{}\n", target);
     println!("[Out]\n{:#?}", parse(&expression, target));
-    // println!("[Out]\n{:#?}", expression.parse(target, 0));
+    println!("[Out]\n{:#?}", parse(&expression, "hoge"));
+    println!("[Out]\n{:#?}", parse(&expression, "1+2-(3+1"));
+    println!("[Out]\n{:#?}", parse(&expression, "0-3+(((3)))"));
 }
