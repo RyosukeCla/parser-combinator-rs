@@ -1,7 +1,7 @@
 pub mod parser;
 use crate::parser::{
-    parse, Char, Choice, ExtractMap, FlattenMap, Kind, Lazy, Many, Map, Node, RegExp, Seq, Token,
-    Type, TypeMap, UnwrapMap, WrapMap,
+    parse, Char, Choice, ExtractMap, FlattenMap, Kind, Lazy, Many, RegExp, Seq, Token, Trim,
+    TypeMap, UnwrapMap, WrapMap,
 };
 
 #[derive(Clone, Debug)]
@@ -14,16 +14,10 @@ const EXPR: &str = "Expr";
 fn expression_example() {
     let spaces = Many(&Token(" "));
     let num = Kind(
-        &TypeMap::<_, _, i128>(
-            &UnwrapMap(&ExtractMap(
-                &Seq(&spaces)
-                    .and(&RegExp(r"([1-9][0-9]*|[0-9])"))
-                    .and(&spaces),
-                1, // extract number
-            )), // [number] -> number
-        ),
+        &TypeMap::<_, _, i32>(&Trim(&RegExp(r"([1-9][0-9]*|[0-9])"), &Token(" "))),
         NUM,
     );
+
     let operator = Kind(&Char("+-"), OP);
     let parenthesis = Lazy::<MyType>();
     let atom = Choice(&num).or(&parenthesis);
@@ -32,7 +26,8 @@ fn expression_example() {
     let paren_open = Seq(&spaces).and(&Token("(")).and(&spaces);
     let paren_close = Seq(&spaces).and(&Token(")")).and(&spaces);
 
-    parenthesis.set_parser(&FlattenMap(&ExtractMap(
+    // FlattenMap
+    parenthesis.set_parser(&UnwrapMap(&ExtractMap(
         &Seq(&paren_open).and(&expression).and(&paren_close),
         1, // extract expression
     )));
