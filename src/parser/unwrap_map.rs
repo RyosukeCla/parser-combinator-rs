@@ -2,10 +2,8 @@ use crate::parser::map;
 use crate::parser::Parser;
 
 /**
- *  Wrap Map
- *  [a]
- *    to
- *  a
+ *  Unwrap Map
+ *  [a] -> a
  */
 pub fn build<K: Clone, P: Parser<K>>(parser: &P) -> map::Map<K> {
   map::build(
