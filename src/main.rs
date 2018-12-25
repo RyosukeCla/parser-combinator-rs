@@ -1,7 +1,7 @@
 pub mod parser;
 use crate::parser::{
     parse, Char, Choice, ExtractMap, FlattenMap, Kind, Lazy, Many, Map, Node, RegExp, Seq, Token,
-    Type, UnwrapMap, WrapMap,
+    Type, TypeMap, UnwrapMap, WrapMap,
 };
 
 #[derive(Clone, Debug)]
@@ -14,24 +14,13 @@ const EXPR: &str = "Expr";
 fn expression_example() {
     let spaces = Many(&Token(" "));
     let num = Kind(
-        &Map(
+        &TypeMap::<_, _, i128>(
             &UnwrapMap(&ExtractMap(
                 &Seq(&spaces)
                     .and(&RegExp(r"([1-9][0-9]*|[0-9])"))
                     .and(&spaces),
                 1, // extract number
             )), // [number] -> number
-            Box::new(|node| {
-                let value = match node.value {
-                    Type::Str(value) => value.parse::<i32>().unwrap(),
-                    _ => panic!("couldn't parse to i32: node.value is not legible for parsing."),
-                };
-
-                Node {
-                    value: Type::I32(value),
-                    kind: node.kind,
-                }
-            }),
         ),
         NUM,
     );
