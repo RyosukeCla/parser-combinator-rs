@@ -106,7 +106,7 @@ println!("{}", parse(&operator, "-").unwrap());
 ### Regex
 
 ```rust
-let number = RegExp(r"([0-9]|[1-9][0-9]*)");
+let num = RegExp(r"([1-9][0-9]*|[0-9])");
 println!("{}", parse(&number, "12345").unwrap());
 // 12345
 ```
