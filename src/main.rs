@@ -1,6 +1,6 @@
 pub mod parser;
 use crate::parser::{
-    parse, Char, Choice, FlattenMap, Lazy, Many, Map, Node, RegExp, Seq, Token, WrapMap,
+    parse, Char, Choice, ExtractMap, FlattenMap, Lazy, Many, Map, Node, RegExp, Seq, Token, WrapMap,
 };
 
 pub fn main() {
@@ -11,20 +11,10 @@ pub fn main() {
     let expression =
         FlattenMap(&Seq(&WrapMap(&atom)).and(&FlattenMap(&Many(&Seq(&operator).and(&atom)))));
 
-    parenthesis.set_parser(&Map(
+    parenthesis.set_parser(&FlattenMap(&ExtractMap(
         &Seq(&Token("(")).and(&expression).and(&Token(")")),
-        Box::new(|node| {
-            // extract Expression
-            let children = node.children.unwrap();
-            let expression = &children[1];
-            let children = expression.children.as_ref().unwrap();
-
-            Node {
-                value: None,
-                children: Some(children.clone()),
-            }
-        }),
-    ));
+        1, // extract expression
+    )));
 
     let targets = vec!["1+2-(3+1-(4))", "hoge", "1+2-(3+1", "0-3+(((3)))"];
 
