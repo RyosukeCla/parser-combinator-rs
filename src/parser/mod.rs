@@ -1,6 +1,7 @@
 mod base;
 mod char;
 mod choice;
+mod flatten;
 mod lazy;
 mod many;
 mod map;
@@ -12,6 +13,7 @@ mod token;
 pub use self::base::{Node, Parser, State};
 pub use self::char::build as Char;
 pub use self::choice::build as Choice;
+pub use self::flatten::build as Flatten;
 pub use self::lazy::build as Lazy;
 pub use self::many::build as Many;
 pub use self::map::build as Map;
