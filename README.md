@@ -222,8 +222,8 @@ let map = Map(
   &Token("a"),
   Box::new(|node| {
     Node {
-      value: Some("b".to_string()),
-      children: None,
+      value: Type::Str("b".to_string()),
+      kind: None,
     }
   })
 );
