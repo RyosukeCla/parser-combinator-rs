@@ -72,20 +72,41 @@ parser.parse(target, position); // -> State
 
 ```rust
 #[derive(Debug, Clone)]
-pub struct State<K: Clone> {
+pub struct State<T: Clone> {
   pub success: bool,
   pub node: Option<Node<T>>,
   pub position: usize,
 }
 
 #[derive(Debug, Clone)]
-pub struct Node<K: Clone> {
-  pub value: Option<String>,
-  pub children: Option<Vec<Node<T>>>,
-  pub kind: Option<T>,
+pub struct Node<T: Clone> {
+  pub value: Type<T>,
+  pub kind: Option<String>,
 }
 
-pub trait Parser<K: Clone> {
+#[derive(Clone, Debug)]
+pub enum Type<T: Clone> {
+  Str(String),
+  Char(char),
+  Isize(isize),
+  Usize(usize),
+  U8(u8),
+  U16(u16),
+  U32(u32),
+  U64(u64),
+  U128(u128),
+  I16(i16),
+  I32(i32),
+  I64(i64),
+  I128(i128),
+  F32(f32),
+  F64(f64),
+  Bool(bool),
+  Val(T),
+  Arr(Vec<Node<T>>),
+}
+
+pub trait Parser<T: Clone> {
   fn parse(&self, target: &str, position: usize) -> State<T>;
   fn box_clone(&self) -> Box<Parser<T>>;
 }
@@ -98,12 +119,7 @@ pub trait Parser<K: Clone> {
 Grant label
 
 ```rust
-#[derive(Clone, Debug)]
-enum Symbol {
-  Num
-}
-
-let num = Kind(&RegExp(r"([1-9][0-9]*|[0-9])"), Symbol::Num);
+let num = Kind(&RegExp(r"([1-9][0-9]*|[0-9])"), "Num");
 println!("{}", parse(&num, "100").unwrap());
 // Num 100
 ```
