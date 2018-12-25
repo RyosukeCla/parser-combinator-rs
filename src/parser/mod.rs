@@ -1,6 +1,7 @@
 mod base;
 mod char;
 mod choice;
+mod extract_map;
 mod flatten_map;
 mod lazy;
 mod many;
@@ -14,6 +15,7 @@ mod wrap_map;
 pub use self::base::{Node, Parser, State};
 pub use self::char::build as Char;
 pub use self::choice::build as Choice;
+pub use self::extract_map::build as ExtractMap;
 pub use self::flatten_map::build as FlattenMap;
 pub use self::lazy::build as Lazy;
 pub use self::many::build as Many;
