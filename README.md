@@ -244,3 +244,15 @@ WrapMap([a, b, c, ...]) = [[a, b, c, ...]]
 ```rust
 let wrap = WrapMap(&parser);
 ```
+
+### Unwrap Map
+
+Unwrap element.
+
+```
+WrapMap([a]) = a
+```
+
+```rust
+let unwrap = UnwrapMap(&parser);
+```
