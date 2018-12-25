@@ -1,6 +1,6 @@
 pub mod parser;
 use crate::parser::{
-    parse, Char, Choice, ExtractMap, FlattenMap, Lazy, Many, Map, Node, RegExp, Seq, Token, WrapMap,
+    parse, Char, Choice, ExtractMap, FlattenMap, Lazy, Many, RegExp, Seq, Token, WrapMap,
 };
 
 pub fn main() {
