@@ -49,7 +49,7 @@ pub fn main() {
 
 ```
 
-## Utils
+## Basic
 
 ### parse
 
@@ -66,6 +66,29 @@ let parser = // ...
 let target = "target &str";
 let position = 0;
 parser.parse(target, position); // -> State
+```
+
+### Struct and Trait
+
+```rust
+#[derive(Debug, Clone)]
+pub struct State<K: Clone> {
+  pub success: bool,
+  pub node: Option<Node<K>>,
+  pub position: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct Node<K: Clone> {
+  pub value: Option<String>,
+  pub children: Option<Vec<Node<K>>>,
+  pub kind: Option<K>,
+}
+
+pub trait Parser<K: Clone> {
+  fn parse(&self, target: &str, position: usize) -> State<K>;
+  fn box_clone(&self) -> Box<Parser<K>>;
+}
 ```
 
 ## Combinators
