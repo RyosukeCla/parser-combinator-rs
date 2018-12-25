@@ -2,12 +2,12 @@ pub mod parser;
 use crate::parser::{Char, Choice, Lazy, Many, Map, Node, Parser, RegExp, Seq, Token};
 
 pub fn main() {
-    let num = RegExp::new(r"([1-9][0-9]*)");
-    let operator = Char::new("+-");
-    let parenthesis = Lazy::new();
-    let atom = Choice::new(&num).or(&parenthesis);
-    let expression = Map::new(
-        &Seq::new(&atom).and(&Many::new(&Seq::new(&operator).and(&atom))),
+    let num = RegExp(r"([1-9][0-9]*)");
+    let operator = Char("+-");
+    let parenthesis = Lazy();
+    let atom = Choice(&num).or(&parenthesis);
+    let expression = Map(
+        &Seq(&atom).and(&Many(&Seq(&operator).and(&atom))),
         Box::new(|node| {
             let mut nodes: Vec<Node> = vec![];
             let children = node.children.unwrap();
@@ -34,10 +34,8 @@ pub fn main() {
         }),
     );
 
-    parenthesis.set_parser(&Map::new(
-        &Seq::new(&Token::new("("))
-            .and(&expression)
-            .and(&Token::new(")")),
+    parenthesis.set_parser(&Map(
+        &Seq(&Token("(")).and(&expression).and(&Token(")")),
         Box::new(|node| {
             // extract Expression
             let children = node.children.unwrap();
