@@ -40,6 +40,25 @@ pub fn main() {
 
 ```
 
+## Utils
+
+### parse
+
+```rust
+let parser = // ...
+let target = "target &str";
+parse(&parser, target); // -> Result<Node, String>
+```
+
+or
+
+```rust
+let parser = // ...
+let target = "target &str";
+let position = 0;
+parser.parse(target, position); // -> State
+```
+
 ## Combinators
 
 ### Token
