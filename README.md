@@ -12,7 +12,6 @@ use parser::{
 #[derive(Clone, Debug)]
 enum MyType {}
 
-#[derive(Clone, Debug)]
 const NUM: &str = "Num";
 const OP: &str = "Op";
 const EXPR: &str = "Expr";
