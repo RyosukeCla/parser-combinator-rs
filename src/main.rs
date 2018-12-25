@@ -31,5 +31,5 @@ pub fn main() {
     println!("[Out]\n{:#?}", parse(&expression, target));
     println!("[Out]\n{:#?}", parse(&expression, "hoge"));
     println!("[Out]\n{:#?}", parse(&expression, "1+2-(3+1"));
-    println!("[Out]\n{:#?}", parse(&expression, "0-3+(((3)))"));
+    println!("[Out]\n{}", parse(&expression, "0-3+(((3)))").unwrap());
 }
