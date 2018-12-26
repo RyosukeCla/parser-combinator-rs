@@ -14,6 +14,9 @@ pub struct Node<T: Clone> {
   pub kind: Option<String>,
 }
 
+#[derive(Debug, Clone)]
+pub struct DefaultType {}
+
 #[derive(Clone, Debug)]
 pub enum Type<T: Clone> {
   Str(String),
