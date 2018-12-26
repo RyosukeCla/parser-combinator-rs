@@ -16,14 +16,14 @@ fn main() {
   let space = token(" ");
   let num = kind(
     &type_map::<_, _, i32>(&trim(&regexp(r"([1-9][0-9]*|[0-9])"), &space)),
-    NUM,
+    "Num",
   );
-  let operator = kind(&char("+-*/"), OP);
+  let operator = kind(&char("+-*/"), "Op");
   let parenthesis = lazy();
   let atom = choice(&num).or(&parenthesis);
   let expression = kind(
     &flatten_map(&seq(&wrap_map(&atom)).and(&flatten_map(&many(&seq(&operator).and(&atom))))),
-    EXPR,
+    "Expr",
   );
   let paren_open = trim(&token("("), &space);
   let paren_close = trim(&token(")"), &space);
