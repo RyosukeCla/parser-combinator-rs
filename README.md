@@ -2,62 +2,113 @@
 
 Under construction..
 
-## Usage
+## Examples
+
+### Expression
 
 ```rust
-use parser::{
-    parse, Char, Choice, ExtractMap, FlattenMap, Kind, Lazy, Many, RegExp, Seq, Token, WrapMap,
+use crate::parser::{
+  char, choice, extract_map, flatten_map, kind, lazy, many, map, regexp, seq, token, trim,
+  type_map, wrap_map, Node, ParserCombinator, Type,
 };
 
-#[derive(Clone, Debug)]
-enum MyType {}
+fn main() {
+  let space = token(" ");
+  let num = kind(
+    &type_map::<_, _, i32>(&trim(&regexp(r"([1-9][0-9]*|[0-9])"), &space)),
+    NUM,
+  );
+  let operator = kind(&char("+-*/"), OP);
+  let parenthesis = lazy();
+  let atom = choice(&num).or(&parenthesis);
+  let expression = kind(
+    &flatten_map(&seq(&wrap_map(&atom)).and(&flatten_map(&many(&seq(&operator).and(&atom))))),
+    EXPR,
+  );
+  let paren_open = trim(&token("("), &space);
+  let paren_close = trim(&token(")"), &space);
 
-const NUM: &str = "Num";
-const OP: &str = "Op";
-const EXPR: &str = "Expr";
+  parenthesis.set_parser(&extract_map(
+    &seq(&paren_open).and(&expression).and(&paren_close),
+    1, // extract expression
+  ));
 
-
-// Expression Parser
-pub fn main() {
-    let space = Token(" ");
-    let num = Kind( // grand Num Label
-        &TypeMap::<_, _, i32>(&Trim(&RegExp(r"([1-9][0-9]*|[0-9])"), &space)), // mapped to i32
-        NUM,
-    );
-    let operator = Kind(&Char("+-"), OP); // grand Op label
-    let parenthesis = Lazy::<MyType>(); // lazy initialized parser
-    let atom = Choice(&num).or(&parenthesis);
-    let expression =
-        FlattenMap(&Seq(&WrapMap(&atom)).and(&FlattenMap(&Many(&Seq(&operator).and(&atom)))));
-    let paren_open = Trim(&Token("("), &space); // (
-    let paren_close = Trim(&Token(")"), &space); // )
-    parenthesis.set_parser(&ExtractMap(
-        &Seq(&paren_open).and(&expression).and(&paren_close), // ( expre )
-        1, // extract expression
-    ));
-
-    let parser = Kind(&expression, EXPR); // grant Expr label
-
-    let target = "1 + 2 + ( 20 + 3 )";
-
-    println!("[In]:\n   {}\n", target);
-    match parse(&parser, target) {
-        Ok(res) => {
-            println!("[Out]:\n   {}\n", res);
-        }
-        Err(message) => {
-            println!("[Out]:\n   {}\n", message);
-        }
-    }
+  let parser: ParserCombinator = ParserCombinator::new(&expression);
+  let target = "1 + 2 - (3 * 4) / (5)";
+  println!("[In]:\n{}\n", target);
+  println!("[Out]:\n{}\n", parser.parse(target).unwrap()); // simple print
 }
 ```
 
 ```
 [In]:
-   1 + 2 + ( 20 + 3 )
+1 + 2 - (3 * 4) / (5)
 
 [Out]:
-   Expr [Num I32(1), Op Str("+"), Num I32(2), Op Str("+"), [Num I32(20), Op Str("+"), Num I32(3)]]
+Expr [Num I32(1), Op Str("+"), Num I32(2), Op Str("-"), Expr [Num I32(3), Op Str("*"), Num I32(4)], Op Str("/"), Expr [Num I32(5)]]
+```
+
+### Complex Number
+
+```rust
+use crate::parser::{
+  map, regexp, seq, token, type_map, Node, ParserCombinator, Type,
+};
+
+#[derive(Clone, Debug)]
+enum ExtendedType {
+  Complex32(i32, i32),
+}
+
+fn main() {
+  let num = type_map::<_, _, i32>(&regexp(r"([1-9][0-9]*|[0-9])"));
+  let plus = token("+");
+  let imaginary = token("i");
+  let expr = seq(&num).and(&plus).and(&num).and(&imaginary);
+  let complex = map(
+    &expr,
+    Box::new(|node| match node.value {
+      Type::Arr(children) => {
+        let re = match children[0].value {
+          Type::I32(re) => re,
+          _ => panic!("err"),
+        };
+        let im = match children[2].value {
+          Type::I32(re) => re,
+          _ => panic!("err"),
+        };
+
+        Node {
+          value: Type::Val(ExtendedType::Complex32(re, im)),
+          kind: None,
+        }
+      }
+      _ => panic!("Error"),
+    }),
+  );
+
+  let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&complex);
+
+  let target = "100+100i";
+  println!("[In]:\n{}\n", target);
+  println!("[Out]:\n{:#?}\n", parser.parse(target).unwrap()); // detail print
+}
+```
+
+```
+[In]:
+100+100i
+
+[Out]:
+Node {
+    value: Val(
+        Complex32(
+            100,
+            100
+        )
+    ),
+    kind: None
+}
 ```
 
 ## Basic
@@ -65,18 +116,36 @@ pub fn main() {
 ### parse
 
 ```rust
+use crate::parser::{parse, DefaultType};
 let parser = // ...
 let target = "target &str";
-parse(&parser, target); // -> Result<Node, String>
+parse::<DefaultType, _>(&parser, target); // -> Result<Node, String>
 ```
 
 or
 
 ```rust
+use crate::parser::ParserCombinator;
 let parser = // ...
+let parser = ParserCombinator::new(&parser);
 let target = "target &str";
-let position = 0;
-parser.parse(target, position); // -> State
+parser.parse(target); // -> Result<Node, String>
+```
+
+### custom type
+
+Customize parsed data type.
+
+```rust
+use crate::parser::ParserCombinator;
+
+#[derive(Clone, Debug)]
+enum ExtendedType {
+  ComplexI32(i32, i32),
+}
+
+let parser = // ...
+let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&parser);
 ```
 
 ### Struct and Trait
@@ -130,7 +199,7 @@ pub trait Parser<T: Clone> {
 Grant label
 
 ```rust
-let num = Kind(&RegExp(r"([1-9][0-9]*|[0-9])"), "Num");
+let num = kind(&RegExp(r"([1-9][0-9]*|[0-9])"), "Num");
 println!("{}", parse(&num, "100").unwrap());
 // Num 100
 ```
@@ -138,7 +207,7 @@ println!("{}", parse(&num, "100").unwrap());
 ### Token
 
 ```rust
-let token = Token("token");
+let token = token("token");
 println!("{}", parse(&token, "token").unwrap());
 // token
 ```
@@ -146,7 +215,7 @@ println!("{}", parse(&token, "token").unwrap());
 ### Char
 
 ```rust
-let operator = Char("+-");
+let operator = char("+-");
 println!("{}", parse(&operator, "+").unwrap());
 // +
 println!("{}", parse(&operator, "-").unwrap());
@@ -156,7 +225,7 @@ println!("{}", parse(&operator, "-").unwrap());
 ### Regex
 
 ```rust
-let num = RegExp(r"([1-9][0-9]*|[0-9])");
+let num = regexp(r"([1-9][0-9]*|[0-9])");
 println!("{}", parse(&number, "12345").unwrap());
 // 12345
 ```
@@ -164,7 +233,7 @@ println!("{}", parse(&number, "12345").unwrap());
 ### Sequence
 
 ```rust
-let seq = Seq(&Token("a")).and(&Token("b"));
+let seq = seq(&token("a")).and(&token("b"));
 println!("{}", parse(&seq, "ab").unwrap());
 // [a, b]
 ```
@@ -172,7 +241,7 @@ println!("{}", parse(&seq, "ab").unwrap());
 ### Many
 
 ```rust
-let many = Many(&Token("a"));
+let many = many(&token("a"));
 println!("{}", parse(&many, "aaaaa").unwrap());
 // [a, a, a, a, a]
 ```
@@ -184,7 +253,7 @@ println!("{}", parse(&many, "aaaaa").unwrap());
 ```
 
 ```rust
-let option = Opt(&Token("aaa"));
+let option = opt(&token("aaa"));
 println!("{}", parse(&option, "aaa").unwrap());
 // aaa
 println!("{}", parse(&option, "").unwrap());
@@ -194,7 +263,7 @@ println!("{}", parse(&option, "").unwrap());
 ### Choice
 
 ```rust
-let choice = Choice(&Token("a")).or(&Token("b"));
+let choice = choice(&token("a")).or(&token("b"));
 println!("{}", parse(&choice, "a").unwrap());
 // a
 println!("{}", parse(&choice, "b").unwrap());
@@ -207,7 +276,7 @@ Lazy initialized parser.
 It is useful for making recursive parser.
 
 ```rust
-let lazy = Lazy();
+let lazy = lazy();
 // define parsers
 lazy.set_parser(&parser);
 ```
@@ -218,8 +287,8 @@ map node to new node.
 
 ```rust
 // map a to b
-let map = Map(
-  &Token("a"),
+let map = map(
+  &token("a"),
   Box::new(|node| {
     Node {
       value: Type::Str("b".to_string()),
@@ -240,7 +309,8 @@ TypeMap(Type::Str) => Type::I32
 ```
 
 ```rust
-let toI32 = TypeMap::<_, _, i32>(&parser);
+let toI32 = type_map::<_, _, i32>(&parser);
+let toI64 = type_map::<_, _, i64>(&parser);
 ```
 
 ### Extract Map
@@ -252,7 +322,7 @@ ExtractMap([ a, b, c ], 1) = b
 ```
 
 ```rust
-let extraction = ExtractMap(&parser, extraction_index);
+let extraction = extract_map(&parser, extraction_index);
 ```
 
 ### Flatten Map
@@ -269,7 +339,7 @@ FlattenMap(
 ```
 
 ```rust
-let flatten = FlattenMap(&parser);
+let flatten = flatten_map(&parser);
 ```
 
 ### Wrap Map
@@ -281,7 +351,7 @@ WrapMap([a, b, c, ...]) = [[a, b, c, ...]]
 ```
 
 ```rust
-let wrap = WrapMap(&parser);
+let wrap = wrap_map(&parser);
 ```
 
 ### Unwrap Map
@@ -293,7 +363,7 @@ WrapMap([a]) = a
 ```
 
 ```rust
-let unwrap = UnwrapMap(&parser);
+let unwrap = unwrap_map(&parser);
 ```
 
 ### Trim
@@ -301,8 +371,8 @@ let unwrap = UnwrapMap(&parser);
 Triming "a" by "-" yields: "--a--" -> "a"
 
 ```rust
-let trim = Trim(&parser, &by);
+let trim = trim(&parser, &by);
 
 // eg
-let trim = Trim(&Token("a"), &Token("-"));
+let trim = trim(&token("a"), &token("-"));
 ```
