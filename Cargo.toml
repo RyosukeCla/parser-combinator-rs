@@ -1,8 +1,9 @@
 [package]
-name = "parser-combinator-rs"
+name = "parser_comb"
 version = "0.1.0"
 authors = ["RyosukeCla <ryosukeclarinet@gmail.com>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 regex = "1"
