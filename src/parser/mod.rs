@@ -1,6 +1,7 @@
 pub mod base;
 pub mod char;
 pub mod choice;
+pub mod except;
 pub mod extract;
 pub mod filter;
 pub mod flatten;
@@ -20,6 +21,7 @@ pub mod wrap;
 pub use self::base::{DefaultType, Node, Parser, State, Type};
 pub use self::char::build as char;
 pub use self::choice::build as choice;
+pub use self::except::build as except;
 pub use self::extract::build as extract;
 pub use self::filter::build as filter;
 pub use self::flatten::build as flatten;
