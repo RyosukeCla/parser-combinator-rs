@@ -169,8 +169,10 @@ fn recursive_fmt<T: Clone + Debug>(node: &Node<T>) -> String {
         res.push_str(", ");
       }
 
-      res.pop();
-      res.pop();
+      if children.len() > 0 {
+        res.pop();
+        res.pop();
+      }
 
       res.push_str("]");
 
