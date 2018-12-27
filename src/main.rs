@@ -1,7 +1,7 @@
 pub mod parser;
 use crate::parser::{
-  char, choice, extract_map, flatten_map, kind, lazy, many, map, regexp, seq, token, trim,
-  type_map, wrap_map, Node, ParserCombinator, Type,
+  char, choice, extract, filter, flatten, kind, lazy, many, map, parse, regexp, seq, token, trim,
+  type_map, wrap, Node, ParserCombinator, Type,
 };
 
 #[derive(Clone, Debug)]
@@ -18,33 +18,35 @@ fn complex_number() {
   let plus = token("+");
   let imaginary = token("i");
   let expr = seq(&num).and(&plus).and(&num).and(&imaginary);
-  let complex = map(
-    &expr,
-    Box::new(|node| match node.value {
-      Type::Arr(children) => {
-        let re = match children[0].value {
-          Type::I32(re) => re,
-          _ => panic!("err"),
-        };
-        let im = match children[2].value {
-          Type::I32(re) => re,
-          _ => panic!("err"),
-        };
+  let only_num = filter(&expr, |node| match node.value {
+    Type::I32(_) => true,
+    _ => false,
+  });
+  let complex = map(&expr, |node| match node.value {
+    Type::Arr(children) => {
+      let re = match children[0].value {
+        Type::I32(re) => re,
+        _ => panic!("err"),
+      };
+      let im = match children[2].value {
+        Type::I32(re) => re,
+        _ => panic!("err"),
+      };
 
-        Node {
-          value: Type::Val(ExtendedType::Complex32(re, im)),
-          kind: None,
-        }
+      Node {
+        value: Type::Val(ExtendedType::Complex32(re, im)),
+        kind: None,
       }
-      _ => panic!("Error"),
-    }),
-  );
+    }
+    _ => panic!("Error"),
+  });
 
   let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&complex);
 
   let target = "100+100i";
   println!("[In]:\n{}\n", target);
   println!("[Out]:\n{:#?}\n", parser.parse(target).unwrap());
+  println!("[Out]:\n{:#?}\n", parse(&only_num, target).unwrap());
 }
 
 fn expression_example() {
@@ -57,13 +59,13 @@ fn expression_example() {
   let parenthesis = lazy();
   let atom = choice(&num).or(&parenthesis);
   let expression = kind(
-    &flatten_map(&seq(&wrap_map(&atom)).and(&flatten_map(&many(&seq(&operator).and(&atom))))),
+    &flatten(&seq(&wrap(&atom)).and(&flatten(&many(&seq(&operator).and(&atom))))),
     EXPR,
   );
   let paren_open = trim(&token("("), &space);
   let paren_close = trim(&token(")"), &space);
 
-  parenthesis.set_parser(&extract_map(
+  parenthesis.set_parser(&extract(
     &seq(&paren_open).and(&expression).and(&paren_close),
     1, // extract expression
   ));

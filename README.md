@@ -281,6 +281,13 @@ let lazy = lazy();
 lazy.set_parser(&parser);
 ```
 
+### Filter
+
+```rust
+let f = |node| => true
+let filtered = filter(&parser, f);
+```
+
 ### Map
 
 map node to new node.
@@ -289,12 +296,12 @@ map node to new node.
 // map a to b
 let map = map(
   &token("a"),
-  Box::new(|node| {
+  |node| {
     Node {
       value: Type::Str("b".to_string()),
       kind: None,
     }
-  })
+  }
 );
 println!("{}", parse(&map, "a").unwrap());
 // b
@@ -313,7 +320,7 @@ let toI32 = type_map::<_, _, i32>(&parser);
 let toI64 = type_map::<_, _, i64>(&parser);
 ```
 
-### Extract Map
+### Extract
 
 Extract an element from elements.
 
@@ -322,15 +329,15 @@ ExtractMap([ a, b, c ], 1) = b
 ```
 
 ```rust
-let extraction = extract_map(&parser, extraction_index);
+let extraction = extract(&parser, extraction_index);
 ```
 
-### Flatten Map
+### Flatten
 
 Flatten elements in elements.
 
 ```
-FlattenMap(
+Flatten(
   [
     [a1, b1, c1, ...],
     [a2, b2, c2, ...]
@@ -339,7 +346,7 @@ FlattenMap(
 ```
 
 ```rust
-let flatten = flatten_map(&parser);
+let flatten = flatten(&parser);
 ```
 
 ### Wrap Map
@@ -351,10 +358,10 @@ WrapMap([a, b, c, ...]) = [[a, b, c, ...]]
 ```
 
 ```rust
-let wrap = wrap_map(&parser);
+let wrap = wrap(&parser);
 ```
 
-### Unwrap Map
+### Unwrap
 
 Unwrap element.
 
@@ -363,7 +370,7 @@ WrapMap([a]) = a
 ```
 
 ```rust
-let unwrap = unwrap_map(&parser);
+let unwrap = unwrap(&parser);
 ```
 
 ### Trim

@@ -6,10 +6,15 @@ pub struct Map<T: Clone> {
   mapper: Rc<Box<Fn(Node<T>) -> Node<T>>>,
 }
 
-pub fn build<T: Clone, P: Parser<T>>(parser: &P, mapper: Box<Fn(Node<T>) -> Node<T>>) -> Map<T> {
+pub fn build<T, P, F>(parser: &P, mapper: F) -> Map<T>
+where
+  T: Clone,
+  P: Parser<T>,
+  F: Fn(Node<T>) -> Node<T> + 'static,
+{
   Map {
     parser: parser.box_clone(),
-    mapper: Rc::new(mapper),
+    mapper: Rc::new(Box::new(mapper)),
   }
 }
 

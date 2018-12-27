@@ -1,8 +1,9 @@
 mod base;
 mod char;
 mod choice;
-mod extract_map;
-mod flatten_map;
+mod extract;
+mod filter;
+mod flatten;
 mod kind;
 mod lazy;
 mod many;
@@ -13,15 +14,16 @@ mod seq;
 mod token;
 mod trim;
 mod type_map;
-mod unwrap_map;
-mod wrap_map;
+mod unwrap;
+mod wrap;
 
 use self::base::Parser;
 pub use self::base::{DefaultType, Node, State, Type};
 pub use self::char::build as char;
 pub use self::choice::build as choice;
-pub use self::extract_map::build as extract_map;
-pub use self::flatten_map::build as flatten_map;
+pub use self::extract::build as extract;
+pub use self::filter::build as filter;
+pub use self::flatten::build as flatten;
 pub use self::kind::build as kind;
 pub use self::lazy::build as lazy;
 pub use self::many::build as many;
@@ -32,8 +34,8 @@ pub use self::seq::build as seq;
 pub use self::token::build as token;
 pub use self::trim::build as trim;
 pub use self::type_map::build as type_map;
-pub use self::unwrap_map::build as unwrap_map;
-pub use self::wrap_map::build as wrap_map;
+pub use self::unwrap::build as unwrap;
+pub use self::wrap::build as wrap;
 
 pub struct ParserCombinator<T: Clone = DefaultType> {
   pub parser: Box<Parser<T>>,
