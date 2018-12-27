@@ -104,10 +104,6 @@ pub fn main() {
     "WS",
   );
   let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&parser);
-  println!(
-    "[Debug]:\n{}\n",
-    debug_parse(&parser, CODE_1, 0).node.unwrap()
-  );
 
   let targets = vec![CODE_1, CODE_2, CODE_3];
   for target in targets {
