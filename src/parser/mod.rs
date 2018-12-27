@@ -17,8 +17,7 @@ mod type_map;
 mod unwrap;
 mod wrap;
 
-use self::base::Parser;
-pub use self::base::{DefaultType, Node, State, Type};
+pub use self::base::{DefaultType, Node, Parser, State, Type};
 pub use self::char::build as char;
 pub use self::choice::build as choice;
 pub use self::extract::build as extract;
@@ -89,4 +88,8 @@ pub fn parse<T: Clone, P: Parser<T>>(parser: &P, target: &str) -> Result<Node<T>
   }
 
   Err("Parse Error: failed at 1".to_string())
+}
+
+pub fn debug_parse<T: Clone, P: Parser<T>>(parser: &P, target: &str, position: usize) -> State<T> {
+  parser.parse(target, position)
 }
