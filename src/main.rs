@@ -1,7 +1,7 @@
 pub mod parser;
 use crate::parser::{
-  char, choice, extract, filter, flatten, kind, lazy, many, map, parse, regexp, seq, token, trim,
-  type_map, wrap, Node, ParserCombinator, Type,
+  char, choice, extract, flatten, kind, lazy, many, map, regexp, seq, token, trim, type_map, wrap,
+  Node, ParserCombinator, Type,
 };
 
 #[derive(Clone, Debug)]
@@ -18,10 +18,6 @@ fn complex_number() {
   let plus = token("+");
   let imaginary = token("i");
   let expr = seq(&num).and(&plus).and(&num).and(&imaginary);
-  let only_num = filter(&expr, |node| match node.value {
-    Type::I32(_) => true,
-    _ => false,
-  });
   let complex = map(&expr, |node| match node.value {
     Type::Arr(children) => {
       let re = match children[0].value {
@@ -46,7 +42,6 @@ fn complex_number() {
   let target = "100+100i";
   println!("[In]:\n{}\n", target);
   println!("[Out]:\n{:#?}\n", parser.parse(target).unwrap());
-  println!("[Out]:\n{:#?}\n", parse(&only_num, target).unwrap());
 }
 
 fn expression_example() {
