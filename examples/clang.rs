@@ -11,7 +11,7 @@ use parser_comb::parser::{
 enum ExtendedType {}
 
 const CODE: &str = r#"
-int int_var=1;
+int  int_var   =   1  ;
 int_var=1+(1+2)+((1+2)+(9)*100);
 int test(int a,int b){
   int var=10;
@@ -32,6 +32,7 @@ pub fn main() {
   let tab = token("\t");
   let whitespace = kind(&choice(&space).or(&new_line).or(&tab), DELIMITER);
   let ws_1 = kind(&many1(&whitespace), DELIMITER);
+  let ws_0 = kind(&many(&whitespace), DELIMITER);
   let whitespaces = kind(&many(&whitespace), DELIMITER);
   let semicolon = kind(&token(";"), DELIMITER);
   let identifier = regexp(r"([a-zA-Z_][a-zA-Z0-9_]*)");
@@ -70,12 +71,13 @@ pub fn main() {
   let var_decl = kind(
     &kind_ignore(
       &seq(&types)
-        .and(&whitespace)
+        .and(&ws_1)
         .and(&identifier)
-        .and(&whitespaces)
+        .and(&ws_0)
         .and(&equal)
-        .and(&whitespaces)
+        .and(&ws_0)
         .and(&num)
+        .and(&ws_0)
         .and(&semicolon),
       DELIMITER,
     ),
