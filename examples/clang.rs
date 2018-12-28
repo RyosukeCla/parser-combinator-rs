@@ -13,7 +13,7 @@ enum ExtendedType {}
 const CODE: &str = r#"
 int  int_var   =   1  ;
 int_var = 1 + ( 1 + 2) + ((1+2)+(9) *  int_var );
-int test(int a,int b){
+int test( int a,  int  b   ){
   int var=10;
   return a+ b ;
   return a;
@@ -109,14 +109,14 @@ pub fn main() {
   );
 
   let param_var_decl = kind(
-    &seq(&types).and(&whitespace).and(&identifier),
+    &kind_ignore(&seq(&types).and(&ws_1).and(&identifier), DELIMITER),
     "PARAM_VAR_DECL",
   );
 
   let param_var_decl = extract(
-    &seq(&token("("))
-      .and(&opt(&sep(&param_var_decl, &token(","))))
-      .and(&token(")")),
+    &seq(&trim(&token("("), &ws))
+      .and(&opt(&sep(&param_var_decl, &trim(&token(","), &ws))))
+      .and(&trim(&token(")"), &ws)),
     1,
   );
 
