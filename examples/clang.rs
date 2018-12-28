@@ -127,13 +127,16 @@ pub fn main() {
       .or(&return_stmt),
   );
 
-  let func_decl = seq(&types)
-    .and(&whitespace)
-    .and(&identifier)
-    .and(&param_var_decl)
-    .and(&token("{"))
-    .and(&compound_stml)
-    .and(&token("}"));
+  let func_decl = kind(
+    &seq(&types)
+      .and(&whitespace)
+      .and(&identifier)
+      .and(&param_var_decl)
+      .and(&token("{"))
+      .and(&compound_stml)
+      .and(&token("}")),
+    "FUNC_DECL",
+  );
 
   let stmt = choice(&var_decl).or(&expr_stmt).or(&func_decl).or(&ws_1);
 
