@@ -1,5 +1,4 @@
 #[macro_use]
-extern crate lazy_static;
 extern crate parser_comb;
 use parser_comb::parser::map::Map;
 use parser_comb::parser::{
@@ -138,7 +137,7 @@ pub fn main() {
     println!("[In]:\n   {}\n", target);
     match parser.parse(target) {
       Ok(res) => {
-        println!("[Out]:\n{:#?}\n", res);
+        println!("[Out]:\n{}\n", res);
       }
       Err(message) => {
         println!("[Out]:\n{}\n", message);
