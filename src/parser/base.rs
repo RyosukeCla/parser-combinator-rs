@@ -150,46 +150,44 @@ impl<T: Clone> ToType<T> for Vec<Node<T>> {
   }
 }
 
-fn recursive_fmt<T: Clone + Debug>(node: &Node<T>) -> String {
-  let mut res = "".to_string();
+fn recursive_fmt<T: Clone + Debug>(node: &Node<T>, indent: &String, is_last: bool) -> String {
+  let mut res: String = "".to_string();
+  let mut next_depth = indent.clone();
+
+  res.push_str(next_depth.as_str());
+  if is_last {
+    res.push_str("`-");
+    next_depth.push_str("  ");
+  } else {
+    res.push_str("|-");
+    next_depth.push_str("| ");
+  }
 
   match &node.kind {
-    Some(kind) => {
-      res.push_str(format!("{} ", kind).as_str());
-    }
-    None => {}
+    Some(kind) => res.push_str(format!("{} ", kind).as_str()),
+    None => res.push_str(format!("{} ", "Node").as_str()),
   }
 
   match &node.value {
     Type::Arr(children) => {
-      res.push_str("[");
-
-      for child in children {
-        res.push_str(recursive_fmt(&child).as_str());
-        res.push_str(", ");
+      let last_index = children.len() - 1;
+      for (i, child) in children.iter().enumerate() {
+        res.push_str("\n");
+        res.push_str(recursive_fmt(&child, &next_depth, i == last_index).as_str());
       }
-
-      if children.len() > 0 {
-        res.pop();
-        res.pop();
-      }
-
-      res.push_str("]");
-
-      res
     }
     _ => {
       let val = format!("{:?}", node.value.clone());
       res.push_str(val.as_str());
-
-      res
     }
   }
+
+  res
 }
 
 impl<T: Clone + Debug> fmt::Display for Node<T> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let res = recursive_fmt(self);
+    let res = recursive_fmt(self, &"".to_string(), true);
     write!(f, "{}", res)
   }
 }
