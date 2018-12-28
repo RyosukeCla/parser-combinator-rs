@@ -12,9 +12,9 @@ enum ExtendedType {}
 
 const CODE: &str = r#"
 int int_var = 1;
-int_var = 1 * int_var;
 int test (int a, int b) {
   int var = 10;
+  int_var = 1 * int_var;
   return;
   return 10 + 10 + (20);
   return a+ b ;
@@ -154,7 +154,7 @@ pub fn main() {
   /*
    * STMT
    */
-  let stmt = choice(&var_decl).or(&expr_stmt).or(&func_decl).or(&ws_1);
+  let stmt = choice(&var_decl).or(&func_decl).or(&ws_1);
 
   let parser = kind_ignore(&many(&stmt), DELIMITER);
   let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&parser);
