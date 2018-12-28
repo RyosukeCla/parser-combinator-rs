@@ -84,7 +84,8 @@ pub fn parse<T: Clone, P: Parser<T>>(parser: &P, target: &str) -> Result<Node<T>
       }
     } else {
       let (col, row) = utils::specify_position(target, result.position);
-      return Err(format!("Parse Error: failed at {}:{}", col, row));
+      let lines = utils::specify_lines(target, (col, row));
+      return Err(format!("Parse Error: failed at {}:{}\n{}", col, row, lines));
     }
   }
 
