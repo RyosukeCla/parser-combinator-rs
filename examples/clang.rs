@@ -128,13 +128,16 @@ pub fn main() {
   );
 
   let func_decl = kind(
-    &seq(&types)
-      .and(&whitespace)
-      .and(&identifier)
-      .and(&param_var_decl)
-      .and(&token("{"))
-      .and(&compound_stml)
-      .and(&token("}")),
+    &kind_ignore(
+      &seq(&types)
+        .and(&whitespace)
+        .and(&identifier)
+        .and(&param_var_decl)
+        .and(&token("{"))
+        .and(&compound_stml)
+        .and(&token("}")),
+      DELIMITER,
+    ),
     "FUNC_DECL",
   );
 
