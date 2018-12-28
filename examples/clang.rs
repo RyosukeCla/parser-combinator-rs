@@ -2,9 +2,9 @@
 extern crate parser_comb;
 use parser_comb::parser::map::Map;
 use parser_comb::parser::{
-  char, choice, debug_parse, except, extract, filter, flatten, identity_map, kind, kind_ignore,
-  lazy, many, many1, map, opt, regexp, sep, seq, token, trim, type_map, unwrap, wrap, Node, Parser,
-  ParserCombinator, Type,
+  char, choice, debug_parse, exclude_empty, extract, filter, flatten, identity_map, kind,
+  kind_ignore, lazy, many, many1, map, opt, regexp, sep, seq, token, trim, type_map, unwrap, wrap,
+  Node, Parser, ParserCombinator, Type,
 };
 
 #[derive(Clone, Debug)]
@@ -12,21 +12,20 @@ enum ExtendedType {}
 
 const CODE: &str = r#"
 int int_var = 1;
-int test (int a, int b) {
+
+int test(int a, int b) {
   int var = 10;
-  int_var = 1 * int_var;
-  return;
-  return 10 + 10 + (20);
-  return a+ b ;
-  return a;
+  int_var = (a + b) * int_var + var;
+  return int_var;
+}
+
+int main() {
+  return test(100, int_var + test(10, 200));
 }
 "#;
 
 const DELIMITER: &str = "DELIMITER";
 const VAR_DECL: &str = "VAR_DECL";
-const DECL_REF: &str = "DECL_REF";
-const IDENTIFIER: &str = "IDENTIFIER";
-const TYPE: &str = "TYPE";
 
 pub fn main() {
   let space = token(" ");
@@ -40,15 +39,13 @@ pub fn main() {
   let semicolon = kind(&token(";"), DELIMITER);
   let identifier = regexp(r"([a-zA-Z_][a-zA-Z0-9_]*)");
   let num = regexp(r"([1-9][0-9]*|[0-9])");
-
   let equal = token("=");
 
-  /*
-   * EXPRESSION STMT
-   */
+  // EXPR STMT
   let paren_block = lazy();
   let operation = kind(&char("=+-*/"), "OPERATOR");
-  let atom = choice(&identifier).or(&num).or(&paren_block);
+  let call_expr = lazy();
+  let atom = choice(&call_expr).or(&identifier).or(&num).or(&paren_block);
   let binary_op = lazy();
   let binary_op_cloned = identity_map(&binary_op);
   paren_block.set_parser(&extract(
@@ -70,9 +67,30 @@ pub fn main() {
   ));
   let expr_stmt = extract(&seq(&binary_op_cloned).and(&whitespaces).and(&semicolon), 0);
 
-  /*
-   * VAR DECL
-   */
+  // CALL EXPR STMT
+  let call_expr_stmt = kind(
+    &kind_ignore(&seq(&call_expr).and(&ws_0).and(&semicolon), DELIMITER),
+    "CALL_EXPR_STMT",
+  );
+
+  // CALL EXPR
+  call_expr.set_parser(&kind(
+    &exclude_empty(&kind_ignore(
+      &seq(&identifier).and(&kind_ignore(
+        &seq(&kind(&trim(&token("("), &ws), DELIMITER))
+          .and(&opt(&sep(
+            &choice(&binary_op_cloned).or(&atom),
+            &trim(&token(","), &ws),
+          )))
+          .and(&kind(&trim(&token(")"), &ws), DELIMITER)),
+        DELIMITER,
+      )),
+      DELIMITER,
+    )),
+    "CALL_EXPR",
+  ));
+
+  // VAR DECL
   let int_type = token("int");
   let float_type = token("float");
   let types = choice(&int_type).or(&float_type);
@@ -92,9 +110,6 @@ pub fn main() {
     VAR_DECL,
   );
 
-  /*
-   *  FUNCTION DECL
-   */
   // RETURN STMT
   let return_symbol = token("return");
   let return_stmt = kind(
@@ -111,23 +126,28 @@ pub fn main() {
     "RETURN_STMT",
   );
 
-  // PARAM STMT
+  // PARAM VAR DECL: can be null
   let param_var_decl = kind(
     &kind_ignore(&seq(&types).and(&ws_1).and(&identifier), DELIMITER),
     "PARAM_VAR_DECL",
   );
-
-  let param_var_decl = extract(
-    &seq(&trim(&token("("), &ws))
+  let param_var_decl = kind_ignore(
+    &seq(&kind(&trim(&token("("), &ws), DELIMITER))
       .and(&opt(&sep(&param_var_decl, &trim(&token(","), &ws))))
-      .and(&trim(&token(")"), &ws)),
-    1,
+      .and(&kind(&trim(&token(")"), &ws), DELIMITER)),
+    DELIMITER,
   );
 
   // COMPOUND STMT
   let compound_stmt = kind(
     &kind_ignore(
-      &many(&choice(&ws).or(&var_decl).or(&expr_stmt).or(&return_stmt)),
+      &many(
+        &choice(&ws)
+          .or(&var_decl)
+          .or(&expr_stmt)
+          .or(&return_stmt)
+          .or(&call_expr_stmt),
+      ),
       DELIMITER,
     ),
     "COMPOUND_STML",
@@ -135,7 +155,7 @@ pub fn main() {
 
   // FUNC DECL
   let func_decl = kind(
-    &kind_ignore(
+    &exclude_empty(&kind_ignore(
       &seq(&types)
         .and(&ws_1)
         .and(&identifier)
@@ -147,7 +167,7 @@ pub fn main() {
           1,
         )),
       DELIMITER,
-    ),
+    )),
     "FUNC_DECL",
   );
 
