@@ -31,6 +31,7 @@ pub fn main() {
   let new_line = token("\n");
   let tab = token("\t");
   let whitespace = kind(&choice(&space).or(&new_line).or(&tab), DELIMITER);
+  let ws_1 = kind(&many1(&whitespace), DELIMITER);
   let whitespaces = kind(&many(&whitespace), DELIMITER);
   let semicolon = kind(&token(";"), DELIMITER);
   let identifier = regexp(r"([a-zA-Z_][a-zA-Z0-9_]*)");
@@ -122,10 +123,7 @@ pub fn main() {
     .and(&compound_stml)
     .and(&token("}"));
 
-  let stmt = choice(&var_decl)
-    .or(&expr_stmt)
-    .or(&func_decl)
-    .or(&new_line);
+  let stmt = choice(&var_decl).or(&expr_stmt).or(&func_decl).or(&ws_1);
 
   let parser = kind_ignore(&many(&stmt), DELIMITER);
   let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&parser);
