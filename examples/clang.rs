@@ -1,119 +1,147 @@
+#[macro_use]
+extern crate lazy_static;
 extern crate parser_comb;
 use parser_comb::parser::map::Map;
 use parser_comb::parser::{
-  char, choice, debug_parse, filter, kind, many, map, regexp, seq, token, trim, type_map, unwrap,
-  Node, Parser, ParserCombinator, Type,
+  char, choice, debug_parse, except, extract, filter, flatten, identity_map, kind, kind_ignore,
+  lazy, many, many1, map, opt, regexp, sep, seq, token, trim, type_map, unwrap, wrap, Node, Parser,
+  ParserCombinator, Type,
 };
 
 #[derive(Clone, Debug)]
 enum ExtendedType {}
 
-const CODE_1: &str = "int int_var=32;";
-
-const CODE_2: &str = r#"
-int test=19;
-
-int main(){
-  int int_var = 32;
-  return int_var;
+const CODE: &str = r#"
+int int_var=1;
+int_var=1+(1+2)+((1+2)+(9)*100);
+int test(int a,int b){
+  int var=10;
+  return a+b;
+  return a;
 }
 "#;
 
-const CODE_3: &str = r#"
-int_var = 1;
-int_var = 2 ;
-"#;
-
-fn kind_ignore<T, P>(parser: &P, ignore: &'static str) -> Map<T>
-where
-  T: Clone,
-  P: Parser<T>,
-{
-  filter(parser, move |node| match &node.kind {
-    Some(kind) => kind != ignore,
-    _ => true,
-  })
-}
+const DELIMITER: &str = "DELIMITER";
+const VAR_DECL: &str = "VAR_DECL";
+const DECL_REF: &str = "DECL_REF";
+const IDENTIFIER: &str = "IDENTIFIER";
+const TYPE: &str = "TYPE";
 
 pub fn main() {
   let space = token(" ");
   let new_line = token("\n");
   let tab = token("\t");
-  let whitespace = kind(&choice(&space).or(&new_line).or(&tab), "WS");
-  let whitespaces = kind(&many(&whitespace), "WS");
-  let equal = token("=");
+  let whitespace = kind(&choice(&space).or(&new_line).or(&tab), DELIMITER);
+  let whitespaces = kind(&many(&whitespace), DELIMITER);
+  let semicolon = kind(&token(";"), DELIMITER);
   let identifier = regexp(r"([a-zA-Z_][a-zA-Z0-9_]*)");
-  let semicolon = token(";");
   let num = regexp(r"([1-9][0-9]*|[0-9])");
 
-  let int_def = token("int");
-  let var_int_def = kind(
+  let equal = token("=");
+
+  /*
+   * Expression Statement
+   */
+  let paren_block = lazy();
+  let operation = char("=+-*/");
+  let atom = choice(&identifier).or(&num).or(&paren_block);
+  let binary_op = lazy();
+  let binary_op_cloned = identity_map(&binary_op);
+  paren_block.set_parser(&extract(
+    &seq(&token("("))
+      .and(&choice(&binary_op_cloned).or(&atom))
+      .and(&token(")")),
+    1,
+  ));
+  binary_op.set_parser(&kind(
+    &seq(&atom)
+      .and(&operation)
+      .and(&choice(&binary_op_cloned).or(&atom)),
+    "BINARY_OP",
+  ));
+  let expr_stmt = extract(&seq(&binary_op_cloned).and(&whitespaces).and(&semicolon), 0);
+
+  /*
+   * VAR DECL
+   */
+  let int_type = token("int");
+  let float_type = token("float");
+  let types = choice(&int_type).or(&float_type);
+  let var_decl = kind(
     &kind_ignore(
-      &seq(&int_def)
+      &seq(&types)
         .and(&whitespace)
         .and(&identifier)
         .and(&whitespaces)
         .and(&equal)
         .and(&whitespaces)
         .and(&num)
-        .and(&whitespaces)
         .and(&semicolon),
-      "WS",
+      DELIMITER,
     ),
-    "VAR_INT_DEF",
+    VAR_DECL,
   );
 
-  let int_substitute = kind(
-    &kind_ignore(
-      &seq(&identifier)
-        .and(&whitespaces)
-        .and(&equal)
-        .and(&whitespaces)
-        .and(&num)
-        .and(&whitespaces)
+  /*
+   *  FUNCTION DECL
+   */
+  let return_symbol = token("return");
+  let return_stmt = kind(
+    &choice(&seq(&return_symbol).and(&semicolon)).or(
+      &seq(&return_symbol)
+        .and(&whitespace)
+        .and(&choice(&binary_op_cloned).or(&atom))
         .and(&semicolon),
-      "WS",
     ),
-    "INT_SUBSTITUTE",
+    "RETURN_STMT",
   );
 
-  let return_int = seq(&token("return"))
+  let param_var_decl = kind(
+    &seq(&types).and(&whitespace).and(&identifier),
+    "PARAM_VAR_DECL",
+  );
+
+  let param_var_decl = extract(
+    &seq(&token("("))
+      .and(&opt(&sep(&param_var_decl, &token(","))))
+      .and(&token(")")),
+    1,
+  );
+
+  let compound_stml = many(
+    &choice(&whitespace)
+      .or(&var_decl)
+      .or(&expr_stmt)
+      .or(&return_stmt),
+  );
+
+  let func_decl = seq(&types)
     .and(&whitespace)
-    .and(&choice(&num).or(&identifier))
-    .and(&whitespaces)
-    .and(&semicolon);
+    .and(&identifier)
+    .and(&param_var_decl)
+    .and(&token("{"))
+    .and(&compound_stml)
+    .and(&token("}"));
 
-  let sentence = choice(&var_int_def)
-    .or(&int_substitute)
-    .or(&return_int)
-    .or(&whitespace);
-  let sentences = kind_ignore(&many(&sentence), "WS");
+  let stmt = choice(&var_decl)
+    .or(&expr_stmt)
+    .or(&func_decl)
+    .or(&new_line);
 
-  let int_func_def = kind(
-    &seq(&int_def)
-      .and(&whitespace)
-      .and(&identifier)
-      .and(&token("(){"))
-      .and(&sentences)
-      .and(&token("}")),
-    "INT_FUNC_DEF",
-  );
-
-  let parser = kind_ignore(
-    &many(&choice(&sentence).or(&int_func_def).or(&new_line)),
-    "WS",
-  );
+  let parser = kind_ignore(&many(&stmt), DELIMITER);
   let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&parser);
 
-  let targets = vec![CODE_1, CODE_2, CODE_3];
+  // println!("{}", debug_parse(&parser, CODE, 0).node.unwrap());
+
+  let targets = vec![CODE];
   for target in targets {
     println!("[In]:\n   {}\n", target);
     match parser.parse(target) {
       Ok(res) => {
-        println!("[Out]:\n   {}\n", res);
+        println!("[Out]:\n{:#?}\n", res);
       }
       Err(message) => {
-        println!("[Out]:\n   {}\n", message);
+        println!("[Out]:\n{}\n", message);
       }
     }
   }
