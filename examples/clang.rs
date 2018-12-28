@@ -12,7 +12,7 @@ enum ExtendedType {}
 
 const CODE: &str = r#"
 int  int_var   =   1  ;
-int_var=1+(1+2)+((1+2)+(9)*100);
+int_var =1+(1+2)+((1+2)+(9)*100);
 int test(int a,int b){
   int var=10;
   return a+b;
@@ -55,9 +55,14 @@ pub fn main() {
     1,
   ));
   binary_op.set_parser(&kind(
-    &seq(&atom)
-      .and(&operation)
-      .and(&choice(&binary_op_cloned).or(&atom)),
+    &kind_ignore(
+      &seq(&atom)
+        .and(&ws_0)
+        .and(&operation)
+        .and(&ws_0)
+        .and(&choice(&binary_op_cloned).or(&atom)),
+      DELIMITER,
+    ),
     "BINARY_OP",
   ));
   let expr_stmt = extract(&seq(&binary_op_cloned).and(&whitespaces).and(&semicolon), 0);
