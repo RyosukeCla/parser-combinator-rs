@@ -20,6 +20,7 @@ pub mod token;
 pub mod trim;
 pub mod type_map;
 pub mod unwrap;
+mod utils;
 pub mod wrap;
 
 pub use self::base::{DefaultType, Node, Parser, State, Type};
@@ -58,18 +59,7 @@ impl<T: Clone + Sized + 'static> ParserCombinator<T> {
   }
 
   pub fn parse(&self, target: &str) -> Result<Node<T>, String> {
-    let result = self.parser.parse(target, 0);
-    if result.success {
-      if result.position == target.len() {
-        if let Some(node) = result.node {
-          return Ok(node);
-        }
-      } else {
-        return Err(format!("Parse Error: failed at {}", 1 + result.position));
-      }
-    }
-
-    Err("Parse Error: failed at 1".to_string())
+    parse(self, target)
   }
 }
 
@@ -93,7 +83,8 @@ pub fn parse<T: Clone, P: Parser<T>>(parser: &P, target: &str) -> Result<Node<T>
         return Ok(node);
       }
     } else {
-      return Err(format!("Parse Error: failed at {}", 1 + result.position));
+      let (col, row) = utils::specify_position(target, result.position);
+      return Err(format!("Parse Error: failed at {}:{}", col, row));
     }
   }
 
