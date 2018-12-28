@@ -15,7 +15,7 @@ int  int_var   =   1  ;
 int_var = 1 + ( 1 + 2) + ((1+2)+(9) *  int_var );
 int test(int a,int b){
   int var=10;
-  return a+b;
+  return a+ b ;
   return a;
 }
 "#;
@@ -95,11 +95,15 @@ pub fn main() {
    */
   let return_symbol = token("return");
   let return_stmt = kind(
-    &choice(&seq(&return_symbol).and(&semicolon)).or(
-      &seq(&return_symbol)
-        .and(&whitespace)
-        .and(&choice(&binary_op_cloned).or(&atom))
-        .and(&semicolon),
+    &kind_ignore(
+      &choice(&seq(&return_symbol).and(&semicolon)).or(
+        &seq(&return_symbol)
+          .and(&ws_1)
+          .and(&choice(&binary_op_cloned).or(&atom))
+          .and(&ws_0)
+          .and(&semicolon),
+      ),
+      DELIMITER,
     ),
     "RETURN_STMT",
   );
