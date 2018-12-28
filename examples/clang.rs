@@ -15,6 +15,8 @@ int  int_var   =   1  ;
 int_var = 1 + ( 1 + 2) + ((1+2)+(9) *  int_var );
 int   test  ( int a,  int  b   )   {
   int var=10;
+  return;
+  return 10 + 10 + (20 );
   return a+ b ;
   return a;
 }
@@ -45,7 +47,7 @@ pub fn main() {
    * Expression Statement
    */
   let paren_block = lazy();
-  let operation = char("=+-*/");
+  let operation = kind(&char("=+-*/"), "OPERATOR");
   let atom = choice(&identifier).or(&num).or(&paren_block);
   let binary_op = lazy();
   let binary_op_cloned = identity_map(&binary_op);
