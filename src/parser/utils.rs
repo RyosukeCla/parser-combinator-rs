@@ -38,10 +38,8 @@ pub fn specify_lines(target: &str, position: (usize, usize)) -> String {
   for _ in 0..(row - 1) {
     checkers.push_str(" ");
   }
-  for _ in (row - 1)..line.len() {
-    checkers.push_str("^");
-  }
-  res.push_str(format!("\n{} |{}", indent, checkers).as_str());
+  checkers.push_str("^");
+  res.push_str(format!("\n{} | {}", indent, checkers).as_str());
 
   res
 }
