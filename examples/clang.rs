@@ -21,6 +21,8 @@ int test(int a, int b) {
 
 int main() {
   return test(100, int_var + test(10, 200));
+  test(100, 100);
+  test();
 }
 "#;
 
@@ -74,19 +76,21 @@ pub fn main() {
   );
 
   // CALL EXPR
+  // (a, b, c) -> [a, b, c]
+  let params_for_call = kind_ignore(
+    &seq(&kind(&trim(&token("("), &ws), DELIMITER))
+      .and(&opt(&sep(
+        &choice(&binary_op_cloned).or(&atom),
+        &trim(&token(","), &ws),
+      )))
+      .and(&kind(&trim(&token(")"), &ws), DELIMITER)),
+    DELIMITER,
+  );
   call_expr.set_parser(&kind(
-    &exclude_empty(&kind_ignore(
-      &seq(&identifier).and(&kind_ignore(
-        &seq(&kind(&trim(&token("("), &ws), DELIMITER))
-          .and(&opt(&sep(
-            &choice(&binary_op_cloned).or(&atom),
-            &trim(&token(","), &ws),
-          )))
-          .and(&kind(&trim(&token(")"), &ws), DELIMITER)),
-        DELIMITER,
-      )),
+    &flatten(&exclude_empty(&kind_ignore(
+      &seq(&wrap(&identifier)).and(&params_for_call),
       DELIMITER,
-    )),
+    ))),
     "CALL_EXPR",
   ));
 
