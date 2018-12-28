@@ -95,6 +95,7 @@ pub fn main() {
   /*
    *  FUNCTION DECL
    */
+  // RETURN STMT
   let return_symbol = token("return");
   let return_stmt = kind(
     &kind_ignore(
@@ -110,6 +111,7 @@ pub fn main() {
     "RETURN_STMT",
   );
 
+  // PARAM STMT
   let param_var_decl = kind(
     &kind_ignore(&seq(&types).and(&ws_1).and(&identifier), DELIMITER),
     "PARAM_VAR_DECL",
@@ -122,7 +124,8 @@ pub fn main() {
     1,
   );
 
-  let compound_stml = kind(
+  // COMPOUND STMT
+  let compound_stmt = kind(
     &kind_ignore(
       &many(&choice(&ws).or(&var_decl).or(&expr_stmt).or(&return_stmt)),
       DELIMITER,
@@ -130,6 +133,7 @@ pub fn main() {
     "COMPOUND_STML",
   );
 
+  // FUNC DECL
   let func_decl = kind(
     &kind_ignore(
       &seq(&types)
@@ -138,7 +142,7 @@ pub fn main() {
         .and(&param_var_decl)
         .and(&extract(
           &seq(&trim(&token("{"), &ws))
-            .and(&compound_stml)
+            .and(&compound_stmt)
             .and(&trim(&token("}"), &ws)),
           1,
         )),
@@ -147,6 +151,9 @@ pub fn main() {
     "FUNC_DECL",
   );
 
+  /*
+   * STMT
+   */
   let stmt = choice(&var_decl).or(&expr_stmt).or(&func_decl).or(&ws_1);
 
   let parser = kind_ignore(&many(&stmt), DELIMITER);
