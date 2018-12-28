@@ -12,7 +12,7 @@ enum ExtendedType {}
 
 const CODE: &str = r#"
 int  int_var   =   1  ;
-int_var =1+(1+2)+((1+2)+(9)*100);
+int_var = 1 + ( 1 + 2) + ((1+2)+(9) *  int_var );
 int test(int a,int b){
   int var=10;
   return a+b;
@@ -31,8 +31,9 @@ pub fn main() {
   let new_line = token("\n");
   let tab = token("\t");
   let whitespace = kind(&choice(&space).or(&new_line).or(&tab), DELIMITER);
-  let ws_1 = kind(&many1(&whitespace), DELIMITER);
-  let ws_0 = kind(&many(&whitespace), DELIMITER);
+  let ws = kind(&choice(&space).or(&new_line).or(&tab), DELIMITER);
+  let ws_1 = kind(&many1(&ws), DELIMITER);
+  let ws_0 = kind(&many(&ws), DELIMITER);
   let whitespaces = kind(&many(&whitespace), DELIMITER);
   let semicolon = kind(&token(";"), DELIMITER);
   let identifier = regexp(r"([a-zA-Z_][a-zA-Z0-9_]*)");
@@ -49,9 +50,9 @@ pub fn main() {
   let binary_op = lazy();
   let binary_op_cloned = identity_map(&binary_op);
   paren_block.set_parser(&extract(
-    &seq(&token("("))
+    &seq(&trim(&token("("), &ws))
       .and(&choice(&binary_op_cloned).or(&atom))
-      .and(&token(")")),
+      .and(&trim(&token(")"), &ws)),
     1,
   ));
   binary_op.set_parser(&kind(
