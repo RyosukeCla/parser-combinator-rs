@@ -170,7 +170,10 @@ fn recursive_fmt<T: Clone + Debug>(node: &Node<T>, indent: &String, is_last: boo
 
   match &node.value {
     Type::Arr(children) => {
-      let last_index = children.len() - 1;
+      let last_index = match children.len() {
+        x if x > 0 => x - 1,
+        _ => 0
+      };
       for (i, child) in children.iter().enumerate() {
         res.push_str("\n");
         res.push_str(recursive_fmt(&child, &next_depth, i == last_index).as_str());
