@@ -13,7 +13,7 @@ enum ExtendedType {}
 const CODE: &str = r#"
 int  int_var   =   1  ;
 int_var = 1 + ( 1 + 2) + ((1+2)+(9) *  int_var );
-int test( int a,  int  b   ){
+int   test  ( int a,  int  b   )   {
   int var=10;
   return a+ b ;
   return a;
@@ -120,22 +120,26 @@ pub fn main() {
     1,
   );
 
-  let compound_stml = many(
-    &choice(&whitespace)
-      .or(&var_decl)
-      .or(&expr_stmt)
-      .or(&return_stmt),
+  let compound_stml = kind(
+    &kind_ignore(
+      &many(&choice(&ws).or(&var_decl).or(&expr_stmt).or(&return_stmt)),
+      DELIMITER,
+    ),
+    "COMPOUND_STML",
   );
 
   let func_decl = kind(
     &kind_ignore(
       &seq(&types)
-        .and(&whitespace)
+        .and(&ws_1)
         .and(&identifier)
         .and(&param_var_decl)
-        .and(&token("{"))
-        .and(&compound_stml)
-        .and(&token("}")),
+        .and(&extract(
+          &seq(&trim(&token("{"), &ws))
+            .and(&compound_stml)
+            .and(&trim(&token("}"), &ws)),
+          1,
+        )),
       DELIMITER,
     ),
     "FUNC_DECL",
@@ -145,8 +149,6 @@ pub fn main() {
 
   let parser = kind_ignore(&many(&stmt), DELIMITER);
   let parser: ParserCombinator<ExtendedType> = ParserCombinator::new(&parser);
-
-  // println!("{}", debug_parse(&parser, CODE, 0).node.unwrap());
 
   let targets = vec![CODE];
   for target in targets {
