@@ -11,12 +11,12 @@ use parser_comb::parser::{
 enum ExtendedType {}
 
 const CODE: &str = r#"
-int  int_var   =   1  ;
-int_var = 1 + ( 1 + 2) + ((1+2)+(9) *  int_var );
-int   test  ( int a,  int  b   )   {
-  int var=10;
+int int_var = 1;
+int_var = 1 * int_var;
+int test (int a, int b) {
+  int var = 10;
   return;
-  return 10 + 10 + (20 );
+  return 10 + 10 + (20);
   return a+ b ;
   return a;
 }
@@ -44,7 +44,7 @@ pub fn main() {
   let equal = token("=");
 
   /*
-   * Expression Statement
+   * EXPRESSION STMT
    */
   let paren_block = lazy();
   let operation = kind(&char("=+-*/"), "OPERATOR");
