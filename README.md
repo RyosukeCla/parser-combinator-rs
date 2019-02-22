@@ -1,6 +1,6 @@
 # Parser Combinator - rust implementation
 
-Under construction..
+Under construction.....
 
 ## Examples
 
