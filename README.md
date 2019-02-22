@@ -1,4 +1,4 @@
-# Parser Combinator - rust implementation
+# Parser Combinator - rust implementatio
 
 Under construction..
 
